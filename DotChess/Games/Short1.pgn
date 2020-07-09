@@ -1,0 +1,8 @@
+[Event "a short / simple game"]
+
+f2-f4 e7-e5
+f4xe5 d7-d6
+e5xd6 Bf8xd6
+g2-g3 Qd8-g5
+Ng1-f3 Qg5xg3+
+h2xg3 Bd6xg3#

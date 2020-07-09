@@ -1,0 +1,94 @@
+[White "Emanuel Lasker"]
+[Black "Jose Raul Capablanca"]
+[Site "Habana WCH"]
+[Date "1921.04.08"]
+[Result "0-1"]
+[Annotator "J. R. Capablanca"]
+
+1. d4 d5
+2. c4 e6
+3. Nc3 Nf6
+4. Bg5 Be7
+5. e3 O-O
+6. Nf3 Nbd7
+7. Qc2 c5
+8. Rd1 Qa5
+9. Bd3 h6
+10. Bh4 cxd4
+11. exd4 dxc4
+12. Bxc4 Nb6
+13. Bb3 Bd7
+14. O-O Rac8
+; The development is now complete. White has a lone d Pawn, but, on the otherhand, Black is somewhat hampered in the manoeuvering of his pieces.
+15. Ne5 Bb5
+; With this move and the following, Black brings about an exchange of pieces, which leaves him with a free game.
+16. Rfe1 Nbd5
+17. Bxd5 Nxd5
+18. Bxe7 Nxe7
+19. Qb3 Bc6
+; Not Ba6 because of Nd7, followed by Nc5.
+20. Nxc6 bxc6
+21. Re5 Qb6
+22. Qc2 Rfd8
+23. Ne2 Rd5
+; Probably White's first mistake. He wants to take a good defensive position, but he should instead have counter-attacked with Na4 and Rc5.
+24. Rxd5 cxd5
+; Black has now the open file and his left side Pawn position is very solid, while White has a weak d-Pawn. The apparently weak Black a Pawn is not actually weak because White has no way to attack it.
+25. Qd2 Nf5
+26. b3 h5
+; In order to free the Queen from the defense of the b-Pawn and also to prevent Rc4 at any stage.h5In order to prevent g4 at a later stage. Also to make a demonstration on the kings side, prepatory to further operations on the other side.
+27. h3 h4
+; Weak, but White wants to be ready to play g4. h4 To tie up White's King side. Later on it will be seen that White is compelled to play g4 and thus further weaken his game.
+28. Qd3 Rc6
+29. Kf1 g6
+30. Qb1 Qb4
+31. Kg1 a5
+{ This was White's sealed move. It was not the best move, but it is doubtful if White has any good system of defense. }
+32. Qb2 a4
+{ Now Black exchanges the pawn and leaves White with a weak, isolated b-Pawn, which will fall sooner or later. }
+33. Qd2 Qxd2
+34. Rxd2 axb3
+35. axb3 Rb6
+{ In order to force Rd3 and thus prevent the White rook from supporting his b-Pawn by Rb2 later on. It means practically tying up the White rook to the defense of his two weak pawns. }
+36. Rd3 Ra6
+37. g4 hxg3 
+{ En passant }
+38. fxg3 Ra2
+39. Nc3 Rc2
+40. Nd1 Ne7
+; The alternative Na4, was not any better. White's game is doomed.
+41. Nc3 Rc1+
+42. Kf2 Nc6
+43. Nd1 Rb1
+; Not Nb4 because of 44. Rd2 Rb1 45. Nb2 Rxb2 46.Rxb2 Nd3+ 47.Ke2 Nxb2 48.Kd2, and Black could not win.
+44. Ke2 Rxb3
+; Not a mistake, but played deliberately. White had no way to protect his b-Pawn.
+45. Ke3 Rb4
+46. Nc3 Ne7
+47. Ne2 Nf5+
+48. Kf2 g5
+49. g4 Nd6
+50. Ng1 Ne4+
+51. Kf1 Rb1+
+52. Kg2 Rb2+
+53. Kf1 Rf2+
+54. Ke1 Ra2
+; All these moves have a meaning. The student should carefully study them.
+55. Kf1 Kg7
+56. Re3 Kg6
+57. Rd3 f6
+58. Re3 Kf7
+59. Rd3 Ke7
+60. Re3 Kd6
+61. Rd3 Rf2+
+62. Ke1 Rg2
+63. Kf1 Ra2
+64. Re3 e5
+; This was my sealed move and unquestionably the best way to win.
+65. Rd3 exd4
+; If 65.Ne2 Nd2+ 66.Kf2 e4 67.Rc3 Nf3 68.Ke3 Ne1 69.Kf2 Ng2. and White would be helpless. If 65.Nf3 Nd2+ exchanging knights wins.
+66. Rxd4 Kc5
+67. Rd1 d4
+68. Rc1+ Kd5
+; There is nothing left. The Black pawn will advance and White will have to give up his Knight for it. This is the finest win of the match and probably took away from Dr. Lasker his last real hope of winning or drawing the match.
+0-1

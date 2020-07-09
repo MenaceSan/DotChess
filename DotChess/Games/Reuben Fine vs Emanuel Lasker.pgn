@@ -1,0 +1,51 @@
+[White "Reuben Fine"]
+[Black "Emanuel Lasker"]
+[Site "Nottingham ENG"]
+[Date "1936.06.10"]
+[Result "1-0"]
+
+1. d4 d5
+2. c4 e6
+3. Nf3 Nf6
+4. Nc3 Be7
+5. e3 O-O 
+{ A harmless continuation as Black can now enter on a variation of the Queen's Gambit Accepted with a tempo more. More aggressive, if White does not want to play the usual 5.Bg5 is even Bf4. }
+6. Bd3 dxc4
+7. Bxc4 c5
+8. O-O a6
+; Black is obviously not content to equalise by ... 9.dxc5 Qxd1 etc.
+9. Qe2 b5
+; Of doubtful value. More correct was 9.Bd3 with the intention of answering 9... by 10.dxc5 # , etc., thus forcing the position that occurred in the actual game.b5
+10. Bd3 Bb7
+; ? 10...Nbd7 in order to recapture with this Knight in case of ...dxc5 was more promising by far. After the text move White gets a slight positional advantage, which however does not endanger Black's game.
+11. dxc5 Bxc5
+12. e4 Nbd7
+; Intending to answer 13.e5 with Bxf3 14.gxf3 Nd5 ; etc. with welcome complications.
+13. Bg5 h6
+14. Bh4 b4
+; Weakening the position on the Q-side without necessity or equivalent. At move 14...Kh7 was sufficient to keep the balance of the position.
+15. Na4 Be7
+16. Rfd1 Nh5
+17. Bxe7 Qxe7
+18. Rac1 Ndf6
+; After this most unnatural move, which leaves the other Knight completely in the air. White's advantage becomes overwhelming. It is really hard to understand why Dr. Lasker rejected the natural 18...Nf4. The only plausible explanation is that he did not like after 19.Qe3 Nxd3 the possibility of 20.Rc7 (20...Rac8 with equality) and answering the move 20...Bc6. If 21.Rxc6 (or 21.Nb6 Nxb4; etc.) Nd7e5 22.Nxe5 Nxe5 23.Rc5 Rfd8 etc., he would emerge from the difficulties. The final phase, not altogether difficult, is played by Fine with his usual accuracy.
+19. g3 a5
+20. Nc5 Rfc8
+; After this White wins perforce. The only slight hope of defence was 20...g6, at least consolidating the position of the unfortunate Knight.
+21. Nxb7 Qxb7
+22. Ne5 Rxc1
+; Also 22...g6 23.Nc4 Qe7 24.e5 followed by Be4, etc., would not help.
+23. Rxc1 Rc8
+24. Rxc8+ Qxc8
+25. Qc2 Qb7 
+; Decisive, as after the exchange the Black Knights would not be able to protect the Q-side Pawns.
+; He could resist a little longer by playing 25...Qd8 26.Qc5 etc.
+26. Qc6 Qa7
+27. Qc8+ Kh7
+28. Nc6 Qc5
+29. e5+ g6
+30. exf6 Nxf6
+31. Qb7 Kg8
+32. Be2 Nd5
+; If now 32...Qc1+ 33. Kg2 Qxb2 34. Nd8, etc.
+33. Ne5 1-0

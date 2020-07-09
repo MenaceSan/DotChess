@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="$(ProjectDir)..\Version.targets" Condition="exists('$(ProjectDir)..\Version.targets')" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>DotChess</RootNamespace>
+    <AssemblyName>DotChess</AssemblyName>
+    <Platforms>AnyCPU;x64</Platforms>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <PackageProjectUrl>https://www.menasoft.com/dotchess</PackageProjectUrl>
+    <Description>https://www.menasoft.com/dotchess
+see ReadMe.md</Description>
+    <PackageIcon>DotChess.ico</PackageIcon>
+    <RepositoryType>GitHub</RepositoryType>
+    <AssemblyVersion>1.0.0.12531</AssemblyVersion>
+    <FileVersion>1.0.0.12531</FileVersion>
+    <Version>1.0.0.12531</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseFile>ReadMe.md</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="DotChess.ico">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="ReadMe.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+   
+</Project>

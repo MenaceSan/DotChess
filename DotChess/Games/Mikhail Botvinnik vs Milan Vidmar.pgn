@@ -1,0 +1,41 @@
+[White "Mikhail Botvinnik"]
+[Black "Milan Vidmar"]
+[Site "Nottingham ENG"]
+[Date "1936.06.25"]
+[Result "1-0"]
+[Annotator "Alekhine"]
+
+1. c4 e6
+2. Nf3 d5
+3. d4 Nf6
+4. Nc3 Be7
+5. Bg5 O-O
+6. e3 Nbd7
+7. Bd3 c5
+{ The variations starting with 7 Rc1 have been so much analysed of recent years that the text-move, though it allows the immediate ...c5, offers better fighting chances. }
+8. O-O cxd4
+{ As the Black pieces are not developed so as to attack the isolated d-pawn, the better policy here is the usual line 8...dxc4 9 Bxc4 a6 10 a4 Re8. }
+9. exd4 dxc4
+10. Bxc4 Nb6
+11. Bb3 Bd7
+{ The beginning of a risky plan, in view of White's prospects of a K side attack. The half-pinning of his king's knight, which seems so harmless at the moment, will in a few moves become extremely disagreeable for Black. It was wiser therefore to clear the situation at once by 11...Nfd5 without much danger in the near future. }
+12. Qd3 Nbd5!
+{ Intending, if 12...Nfd5; 13 Bc2. }
+13. Ne5 Bc6
+14. Rad1 Nb4?
+{ A second mistake, after which White's attack becomes tremendously strong. A lesser evil was ...Rc8 in order to answer 15 Qh3 with ...Nxc3 16 bxc3 Be4. }
+15. Qh3 Bd5
+{ This does not solve the problem of the defence, as White preserves his powerful king's bishop. }
+16. Nxd5 Nbxd5
+17. f4 Rc8!
+{ Or ...g6 18 Bh6 Re8 19 g4, etc. }
+18. f5 exf5
+19. Rxf5 Qd6?
+{ Losing immediately. The only move was ...Rc7, after which White would increase his pressure against f7 by 20 Rdf1 followed eventually by Qh4 with decisive advantage. }
+20. Nxf7 Rxf7!
+{ Simple and neat. Black cannot avoid serious material loss. }
+21. Bxf6 Bxf6
+22. Rxd5 Qc6
+{ Much stronger than 22 Bxd5. Or 22...Bxd4+ 23 Kh1. }
+23. Rd6 Qe8
+24. Rd7 1-0
