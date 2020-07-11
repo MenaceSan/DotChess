@@ -4,6 +4,7 @@
 // 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace DotChess
@@ -55,6 +56,7 @@ namespace DotChess
         /// </summary>
         /// <param name="color">ChessColor</param>
         /// <returns>ChessStateColor</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ChessStateColor GetStateColor(ChessColor color)
         {
             return color.IsWhite ? White : Black;
@@ -65,6 +67,7 @@ namespace DotChess
         /// </summary>
         /// <param name="moveCount">0 based</param>
         /// <returns>Turn number 1 based</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetTurnNumberForMove(int moveCount)
         {
             return (moveCount / 2) + 1;
@@ -75,6 +78,7 @@ namespace DotChess
         /// </summary>
         /// <param name="moveCount">0 based.</param>
         /// <returns>ChessColor</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ChessColor GetColorForMove(int moveCount)
         {
             return ChessUtil.IsEven(moveCount) ? ChessColor.kWhite : ChessColor.kBlack;

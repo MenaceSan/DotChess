@@ -266,6 +266,8 @@ namespace DotChess
                             return ChessResultF.Invalid;  // Blocked. technically this means I'm blocked before i get there !
                     }
 
+                    // I should never get here !
+                    Debug.Assert(false);
                     return ChessResultF.Invalid;   // can be only 1 IsOffsetDir() match in MoveOffsets. so stop looking.
                 }
             }

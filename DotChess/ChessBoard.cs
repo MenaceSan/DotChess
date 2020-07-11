@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace DotChess
@@ -22,15 +23,18 @@ namespace DotChess
         // derived/helper values.
         public byte CaptureCount;    // Quantity of pieces captured/off board. 
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected ChessPiece GetPiece(byte id)
         {
             return Pieces[id];
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ChessPiece GetPiece(ChessPieceId id)
         {
             return GetPiece((byte)id);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdatePiece(ChessPiece piece)
         {
             // The piece changed its ChessTypeId or ChessPosition.

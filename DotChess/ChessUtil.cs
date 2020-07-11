@@ -313,14 +313,19 @@ namespace DotChess
         public bool IsOnBoard => IsOnBoardX && IsOnBoardY;    // notation for a piece not currently on the board. Invalid position. IsCaptured
         public bool IsValidCaptured => X == kDim && Y < kNullVal;
         public bool IsSquareWhite => !ChessUtil.IsEven(X ^ Y);    // on a white board square? used for testing bishops. only valid if IsOnBoard
-        public ushort BitIdx => GetBitIdx(X,Y); 
-        public uint HashCode64 => ((uint)Y * kNullVal) + X;
+        public ushort BitIdx => GetBitIdx(X,Y);                 // unique code that does NOT include captured positions.
+        public uint HashCode64 => ((uint)Y * kNullVal) + X;     // unique code that will include captured positions.
 
+        /// <summary>
+        /// Get value from 0 to 63.
+        /// ASSUME IsOnBoard. Place on Grid or in 64 bit mask.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns>unique code that does NOT include captured positions.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort GetBitIdx(byte x, byte y)
         {
-            // Get value from 0 to 63.
-            // ASSUME IsOnBoard. Place on Grid or in 64 bit mask.
             Debug.Assert(x < kDim && y < kDim);
             return (ushort)((y * kDim) + x);
         }
