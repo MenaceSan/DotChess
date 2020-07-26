@@ -127,6 +127,7 @@ namespace DotChess
 
         private ChessResultF Move(ChessPiece piece, ChessPosition posNew, bool promoteToKnight = false)
         {
+            // Make a move.
             if (PlayModeId == ChessModeId.NoRules)
             {
                 // Allow move without test.
@@ -148,12 +149,12 @@ namespace DotChess
             ChessResultF newFlags = Board.Move(piece, posNew, LastResultF.GetReqInCheck() | (promoteToKnight ? ChessRequestF.PromoteN : 0));
             if (!newFlags.IsAllowedMove())
             {
-                return newFlags;    // no move.
+                return newFlags;    // bad move. no change.
             }
 
             // Advance any ChessBestTest
-            TestW?.MoveNext(piece.Id, posNew);
-            TestB?.MoveNext(piece.Id, posNew);
+            TestW?.MoveNext(piece.Id, posNew, true);
+            TestB?.MoveNext(piece.Id, posNew, true);
 
             // Complete the move.
             int moveCount = MoveCount;
@@ -225,15 +226,14 @@ namespace DotChess
         /// <summary>
         /// What should my next move be ? best move for me.
         /// </summary>
-        /// <param name="depthMax"></param>
-        /// <returns>ChessMove</returns>
+        /// <returns>ChessMoveId</returns>
         public ChessMoveId RecommendBest1()
         {
-            ChessRequestF flagsReq = LastResultF.GetReqInCheck();
+            ChessRequestF flagsReq = LastResultF.GetReqInCheck() | ChessRequestF.Test;
             bool isWhite = Board.State.TurnColor == ChessColor.kWhite;
             ChessBestTest tester = (isWhite || TestB == null) ? TestW : TestB;
 
-            if (ChessDb._Instance != null) // find a move in my moves db.
+            if (ChessDb._Instance != null) // find a move in my opening moves db.
             {
                 // Always assume the db move is the best move.
                 bool transpose = !isWhite;
@@ -244,8 +244,8 @@ namespace DotChess
                     var move = dbMoves[i];
                     if (!Board.TestMove(GetPiece(move.Id), move.ToPos, flagsReq).IsAllowedMove())
                     {
-                        // This should NEVER happen. our db is corrupt! Bad.
-                        ChessGame.InternalFailure("ChessDb corrupt.");
+                        // This should NOT happen. Our db is corrupt? Or a cache collision is suggesting a bad move. Just ignore it.
+                        ChessGame.InternalFailure("ChessDb corrupt or cache collision.");
                         dbMoves.RemoveAt(i); i--;
                         continue;
                     }
@@ -258,10 +258,7 @@ namespace DotChess
             }
 
             // No Db move available. So figure it out.
-            int depthPrev = tester.InitDepth();
-            tester.FindBestMoves(flagsReq); // update scores for BestMoves. This can be VERY slow.
-            tester.DepthMax = depthPrev;
-
+            tester.FindBestMoves(flagsReq);
             int countMoves = tester.GetBestMovesTieCount();
             if (countMoves <= 0)
                 return null;    // Game over. I have no moves. Checkmate or Stalemate.

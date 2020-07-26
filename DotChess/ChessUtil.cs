@@ -138,7 +138,7 @@ namespace DotChess
         CheckBlock = 0x2000,    // Move is blocked because it results in check on me. (or doesnt clear an existing check)
 
         ColorW = 0x4000,        // Turn is/was White. // Can be used with ChessResultF.Resigned.  
-        ColorB = 0x8000,        // Turn is/was Black. Combine to support 4 player mode? NOT Needed ??
+        ColorB = 0x8000,        // Turn is/was Black.
     }
 
     /// <summary>
@@ -150,7 +150,7 @@ namespace DotChess
     {
         K = 0x01,    // White kings side castle used. O-O  (short) 
         Q = 0x02,    // White queen side castle used. O-O-O (long)
-        All = 0x03,     // all flags. No Castle is available.
+        All = 0x03,     // all flags = No Castle is available.
     }
 
     /// <summary>
@@ -306,14 +306,14 @@ namespace DotChess
         public const byte kNullVal = (byte)ChessPieceId.QTY;  // NOT a valid value for anything.
         public static readonly ChessPosition kNull = new ChessPosition(kNullVal, kNullVal);   // a not valid value. !IsOnBoard and ! IsValidCaptured
 
-        public const char kDimCharX = (char)(kX0 + kDim); // 'i' = GetLetterX(kDim) // indicates capture.
+        public const char kDimCharX = (char)(kX0 + kDim); // 'i' = GetNotationX(kDim) // indicates capture.
 
         public bool IsOnBoardX => X < kDim;
         public bool IsOnBoardY => Y < kDim;
         public bool IsOnBoard => IsOnBoardX && IsOnBoardY;    // notation for a piece not currently on the board. Invalid position. IsCaptured
         public bool IsValidCaptured => X == kDim && Y < kNullVal;
         public bool IsSquareWhite => !ChessUtil.IsEven(X ^ Y);    // on a white board square? used for testing bishops. only valid if IsOnBoard
-        public ushort BitIdx => GetBitIdx(X,Y);                 // unique code that does NOT include captured positions.
+        public ushort BitIdx => GetBitIdx(X, Y);                 // unique code that does NOT include captured positions.
         public uint HashCode64 => ((uint)Y * kNullVal) + X;     // unique code that will include captured positions.
 
         /// <summary>
@@ -330,11 +330,15 @@ namespace DotChess
             return (ushort)((y * kDim) + x);
         }
 
+        public static byte GetTransposed(byte v)
+        {
+            return (byte)(kDim1 - v);
+        }
         public ChessPosition GetTransposed()
         {
             // Get equiv opposite color position for transposed Black/White
             Debug.Assert(IsOnBoard);
-            return new ChessPosition((byte)(kDim1 - X), (byte)(kDim1 - Y));
+            return new ChessPosition(GetTransposed(X), GetTransposed(Y));
         }
 
         public bool IsValidBishop(bool isSquareWhite)
@@ -355,7 +359,7 @@ namespace DotChess
             return cy >= kY0 && cy <= '8';
         }
 
-        public static char GetLetterX(byte x)
+        public static char GetNotationX(byte x)
         {
             // as char Letter
             Debug.Assert(x <= kNullVal);
@@ -363,7 +367,7 @@ namespace DotChess
         }
         public static byte GetX(char cx)
         {
-            // as char Letter. reverse of GetLetterX()
+            // as char Letter. reverse of GetNotationX()
             if (cx >= kX0 && cx <= 'z')
                 return (byte)(cx - kX0);
             if (cx >= '0' && cx <= '9')
@@ -372,7 +376,7 @@ namespace DotChess
             return 0;   // BAD
         }
 
-        public static char GetCharY(byte y)
+        public static char GetNotationY(byte y)
         {
             // as char Number
             Debug.Assert(y <= kNullVal);
@@ -380,7 +384,7 @@ namespace DotChess
         }
         public static byte GetY(char cy)
         {
-            // as char Number. reverse of GetCharY()
+            // as char Number. reverse of GetNotationY()
             if (cy >= kY0 && cy <= '9')
                 return (byte)(cy - kY0);
             if (cy >= 'a' && cy <= 'z')
@@ -396,8 +400,8 @@ namespace DotChess
             return Y;
         }
 
-        public char NotationX => GetLetterX(X);
-        public char NotationY => GetCharY(Y);
+        public char NotationX => GetNotationX(X);
+        public char NotationY => GetNotationY(Y);
 
         public string Notation  // Where is this piece now. e.g. "a3"
         {
@@ -407,12 +411,12 @@ namespace DotChess
                 {
                     return string.Concat(NotationX, NotationY);
                 }
-               
+
                 // non standard notation for capture count. "ix" = kNull.
-                return string.Concat(kDimCharX, GetCharY(GetCaptureCount()));
+                return string.Concat(kDimCharX, GetNotationY(GetCaptureCount()));
             }
         }
-        public new string ToString()
+        public override string ToString()
         {
             return Notation;
         }
@@ -438,13 +442,11 @@ namespace DotChess
             // IEquatable
             return X == other.X && Y == other.Y;
         }
-        public static int Compare2(ChessPosition x, ChessPosition y)
+        public static int Compare2(ChessPosition a, ChessPosition b)
         {
             // For sorting in a list. like IComparable<ChessPosition>
-            int diff = x.X - y.X;
-            if (diff != 0)
-                return diff;
-            return x.Y - y.Y;
+            // 0 = equal.
+            return ((a.Y - b.Y) * kNullVal) + (a.X - b.X);
         }
 
         public static bool IsValidNotation(string notation, int i)
@@ -452,7 +454,13 @@ namespace DotChess
             // Is this string a valid IsOnBoard position in notation format? NOT Captured.
             return notation.Length >= i + 2 && IsXFile(notation[i + 0]) && IsYRank(notation[i + 1]);
         }
- 
+
+        public ChessPosition(byte x, byte y)
+        {
+            // a position. May be INvalid. 
+            X = x;
+            Y = y;
+        }
         public ChessPosition(byte captureCount)
         {
             // create a piece no longer on the board. IsCaptured
@@ -460,12 +468,11 @@ namespace DotChess
             Y = captureCount;     // order of capture. Starting at 0.
             Debug.Assert(IsValidCaptured);
         }
-
-        public ChessPosition(byte x, byte y)
+        public ChessPosition(ushort bitIdx)
         {
-            // create a position on the board. May not be valid. May be captured?  
-            X = x;
-            Y = y;
+            X = (byte)(bitIdx % kDim);
+            Y = (byte)(bitIdx / kDim);
+            Debug.Assert(IsOnBoard);
         }
         public ChessPosition(char cxFile, char cyRank)
         {
@@ -528,7 +535,7 @@ namespace DotChess
             }
         }
 
-        public new string ToString()
+        public override string ToString()
         {
             return Id.ToString();
         }
@@ -563,9 +570,7 @@ namespace DotChess
         public byte GetRank(ChessPosition pos)
         {
             // Get rank (Y) from the perspective of the color.
-            if (IsWhite)
-                return pos.Y;
-            return (byte)(ChessPosition.kDim1 - pos.Y);
+            return IsWhite ? pos.Y : ChessPosition.GetTransposed(pos.Y);
         }
 
         public ChessColor(ChessColorId colorId)

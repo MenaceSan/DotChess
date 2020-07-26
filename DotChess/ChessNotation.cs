@@ -70,7 +70,7 @@ namespace DotChess
             return Equals(other);
         }
 
-        public new string ToString()
+        public override string ToString()
         {
             // Notation Symbol Meanings:  
             // R    Rook    
@@ -218,16 +218,16 @@ namespace DotChess
             {
                 case kWinBlack:
                     Move.Flags = ChessResultF.Resigned | ChessColor.kWhite.Flags;
-                    return i + kWinBlack.Length;
+                    return j;
                 case kWinWhite:
                     Move.Flags = ChessResultF.Resigned | ChessColor.kBlack.Flags;
-                    return i + kWinWhite.Length;
+                    return j;
                 case kStalemate:    // a Stalemate/draw 
                     Move.Flags = ChessResultF.Stalemate | color.Flags;
-                    return i + notation2.Length;
+                    return j;
                 case kActive:    // * = game is ongoing ?? No idea why Karpov uses this. assume game is a stalemate. no idea who wins.
                     Move.Flags = ChessResultF.Stalemate | color.Flags;
-                    return i + notation2.Length;
+                    return j;
             }
 
             if (notation2.StartsWith(kCastleK))  // Short side ? or prefix of long side.
@@ -317,9 +317,9 @@ namespace DotChess
                     }
                 }
 
-                if (TypeId == ChessTypeId.Pawn 
-                    && !From.IsOnBoard 
-                    && !Move.Flags.IsAny(ChessResultF.Capture) 
+                if (TypeId == ChessTypeId.Pawn
+                    && !From.IsOnBoard
+                    && !Move.Flags.IsAny(ChessResultF.Capture)
                     && color.GetRank(Move.ToPos) != 1 + ChessOffset.kPawnOpen)
                 {
                     // In this case, I can predict where the pawn came From. 
@@ -340,46 +340,44 @@ namespace DotChess
                     continue;
                 }
 
-                if (ch == '=' && i + 1 < notation.Length && IsPromoteChar(notation[i + 1]))
+                switch (ch)
                 {
-                    Move.Flags |= GetPromoteFlag(notation[i + 1]);
-                    i++;
-                    continue;
+                    case '=':
+                        if (i + 1 < notation.Length && IsPromoteChar(notation[i + 1]))
+                        {
+                            Move.Flags |= GetPromoteFlag(notation[i + 1]);
+                            i++;
+                            continue;
+                        }
+                        break;
+                    case '(':
+                        if (i + 2 < notation.Length && IsPromoteChar(notation[i + 1]) && notation[i + 2] == ')')
+                        {
+                            Move.Flags |= GetPromoteFlag(notation[i + 1]);
+                            i += 2;
+                            continue;
+                        }
+                        break;
+                    case '#':
+                        Move.Flags |= ChessResultF.Check | ChessResultF.Checkmate;
+                        continue;
+                    case '+':
+                        Move.Flags |= ChessResultF.Check;
+                        if (i + 1 < notation.Length && notation[i + 1] == '+') // ++
+                        {
+                            Move.Flags |= ChessResultF.Checkmate;
+                            i++;
+                        }
+                        continue;
+                    case '?':
+                        // a questionable/bad move.
+                        Move.Flags |= ChessResultF.Bad;
+                        continue;
+                    case '!':
+                        // an important/good move.
+                        Move.Flags |= ChessResultF.Good;
+                        continue;
                 }
-                if (ch == '(' && i + 2 < notation.Length && IsPromoteChar(notation[i + 1]) && notation[i + 2] == ')')
-                {
-                    Move.Flags |= GetPromoteFlag(notation[i + 1]);
-                    i += 2;
-                    continue;
-                }
-                if (ch == '#')
-                {
-                    Move.Flags |= ChessResultF.Check | ChessResultF.Checkmate;
-                    continue;
-                }
-                if (ch == '+')
-                {
-                    Move.Flags |= ChessResultF.Check;
-                    if (i + 1 < notation.Length && notation[i + 1] == '+') // ++
-                    {
-                        Move.Flags |= ChessResultF.Checkmate;
-                        i++;
-                    }
-                    continue;
-                }
-                if (ch == '?')
-                {
-                    // a questionable/bad move.
-                    Move.Flags |= ChessResultF.Bad;
-                    continue;
-                }
-                if (ch == '!')
-                {
-                    // an important/good move.
-                    Move.Flags |= ChessResultF.Good;
-                    continue;
-                }
-
                 break;  // nothing i recognize so stop.
             }
 
@@ -414,7 +412,7 @@ namespace DotChess
                 ChessGame.InternalFailure("Notation GetPiece"); // weird? this should never happen!
             }
 
-            // NOTE If the From field is not accurate (or partial) we must try to guess which piece it is.
+            // NOTE If the From field is not accurate (or partial, vague) we must try to guess which piece it is.
             // Find the piece with correct type that CAN move to 'To'.
 
             var possibles = new List<ChessPiece>();

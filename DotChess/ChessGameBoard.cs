@@ -374,7 +374,7 @@ namespace DotChess
                     case ChessTypeId.King:
                         if (!flagsReq.IsAny(ChessRequestF.Test)) // This should never actually happen.
                         {
-                            Debug.Assert(flagsReq.IsAny(ChessRequestF.Test) || !pieceCapture.IsKing);   // NOT allowed!
+                            Debug.Assert(!pieceCapture.IsKing);   // NOT allowed!
                             return ChessResultF.Invalid;
                         }
                         break;

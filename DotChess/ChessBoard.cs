@@ -348,7 +348,7 @@ namespace DotChess
             }
         }
 
-        public new string ToString()
+        public override string ToString()
         {
             return GetFEN(true);
         }
@@ -373,7 +373,7 @@ namespace DotChess
             return sb.ToString();
         }
 
-        public const ulong kHash0 = 0x86f926c26a253d57;     // start for White. NOT transposed.
+        public const ulong kHash0 = 0x86f926c26a253d57;     // start for White. NOT transposed. NOTE: If this changes then we must rebuild the Opening Moves DB !
 
         public ulong GetHashCode64(bool transpose)
         {

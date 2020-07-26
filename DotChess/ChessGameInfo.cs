@@ -50,7 +50,7 @@ namespace DotChess
 
         public ChessColor ColorWinner => ChessColor.GetColor(ResultId);
 
-        public new int GetHashCode()
+        public override int GetHashCode()
         {
             // a unique id for this game info.
             int hashCode = Event.GetHashCode();

@@ -19,7 +19,7 @@ namespace DotChess
 
         public void Command(string cmd)
         {
-
+            // TODO UCI
         }
 
         public ChessUci(TextWriter output)

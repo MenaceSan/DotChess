@@ -18,13 +18,13 @@ namespace DotChess
     {
         public int Score;   // Score for what may happen after this + n levels.
 
-        public static int Compare2(ChessBestMove x, ChessBestMove y)
+        public static int Compare2(ChessBestMove a, ChessBestMove b)
         {
             // For sorting in a list. 
-            int diff = Comparer<int>.Default.Compare(x.Score, y.Score);
+            int diff = Comparer<int>.Default.Compare(a.Score, b.Score);
             if (diff != 0)
                 return diff;
-            return ChessMoveId.Compare2(x, y);
+            return ChessMoveId.Compare2(a, b);
         }
 
         public ChessBestMove(ChessMove clone, ChessPieceId id)
@@ -42,6 +42,7 @@ namespace DotChess
     public class ChessBestMoves : ChessBestMove
     {
         public List<ChessBestMoves> ChildMoves; // (if i have them) kChildMovesMax
+        // Completed ? The ponder may have been interrupted.
 
         public ChessBestMoves(ChessMove clone, ChessPieceId id, List<ChessBestMoves> bestMoves = null)
             : base(clone, id)
@@ -59,14 +60,17 @@ namespace DotChess
     /// </summary>
     public class ChessBestTest
     {
-        public const int kChildMovesMax = 5;       // Keep (at most) X best scoring moves.
+        public const int kChildMovesMax = 5;       // Keep (at most) X best scoring moves. TODO Allow this to change ?
 
         private readonly ChessGameBoard Board;   // Must be a clone to work on another thread.
         public readonly Random Random;     // Add a small random element for scoring otherwise equal moves. 0.01
         public readonly CancellationToken Cancel;       // Allow time based cancel of search.
 
-        public int DepthMax;      // How many levels deep should i go ?
-        public int DepthParallel = 255;     // How deep should i allow Parallel? For testing.
+        public bool Ponder;      // TODO When not my turn, Keep thinking with a lighter thread usage. Dont trim kChildMovesMax unless the moves are truly junk.
+
+        public readonly int DepthMaxTarget;      // How many levels deep should i go ? How smart am i ?
+        public int DepthMaxTurn;      // How many levels deep should i go in this turn?
+        public int DepthParallel = 255;     // How deep should i allow Parallel usage? For testing. 255 = always allow Parallel.
         public int DepthCur;    // How many levels deep have i gone?
 
         public List<ChessBestMoves> BestMoves;   // All possible 1 moves from Board, sorted by Score.
@@ -74,14 +78,14 @@ namespace DotChess
 
         public int Score;    // the current BEST score at DepthCur level for all BestMoves.
 
-        static int _ThreadsRunning = 0;
+        static int _ThreadsRunning = 0;         // < ChessUtil.kThreadsMax
 
         public int MoveCount => Board.State.MoveCount;  // helper.
 
         public ChessBestTest(ChessGameBoard board, int depthMax, Random random, CancellationToken cancel)
         {
             this.Board = board;
-            this.DepthMax = depthMax;   // Max depth for this. how hard will i think about it.
+            this.DepthMaxTarget = DepthMaxTurn = depthMax;   // Max depth for this. how hard will i think about it.
             this.Random = random;
             this.Cancel = cancel;
         }
@@ -94,15 +98,27 @@ namespace DotChess
             BestMoves = null;
         }
 
-        private void MoveStop()
+        private void StopPonder()
         {
             // If I am pondering while waiting. I must stop pondering so i can play.
             // Set Cancel flag and wait for threads to return.
 
-            if (DepthCur == 0)
+            if (DepthCur <= 0)    // we are not pondering.
                 return;
 
             // Cancel and wait for completion.
+            // TODO
+        }
+
+        private void StartPonder()
+        {
+            // Ponder on a background thread. Do not halt this thread.
+            // Look for moves the opponent might make and look for counters to it. 
+            // assume most of the moves will be wasted. Since the opponent wont pick them.
+
+            if (!Ponder)
+                return;
+
             // TODO
         }
 
@@ -111,11 +127,11 @@ namespace DotChess
         /// </summary>
         /// <param name="piece">what piece moved?</param>
         /// <param name="posNew">where did it move to?</param>
-        public void MoveNext(ChessPieceId id, ChessPosition posNew)
+        public void MoveNext(ChessPieceId id, ChessPosition posNew, bool isMyMove)
         {
             if (BestMoves == null)
                 return;
-            MoveStop();
+            StopPonder();
             foreach (ChessBestMoves move2 in BestMoves)
             {
                 if (move2.Id == id && move2.ToPos.Equals(posNew))
@@ -125,6 +141,10 @@ namespace DotChess
                 }
             }
             Reset();  // invalidated. They didn't take a move i tested, expected (or kept).
+            if (!isMyMove)
+            {
+                StartPonder();
+            }
         }
 
         /// <summary>
@@ -135,8 +155,9 @@ namespace DotChess
         {
             if (BestMoves == null)
                 return;
-            MoveStop();
+            StopPonder();
             BestMoves = new List<ChessBestMoves> { new ChessBestMoves(movePrev, movePrev.Id, BestMoves) };
+            StartPonder();
         }
 
         /// <summary>
@@ -144,17 +165,17 @@ namespace DotChess
         /// </summary>
         private class CompSortW : IComparer<ChessBestMove>
         {
-            public int Compare(ChessBestMove x, ChessBestMove y)
+            public int Compare(ChessBestMove a, ChessBestMove b)
             {
-                return -ChessBestMove.Compare2(x, y);
+                return -ChessBestMove.Compare2(a, b);
             }
         }
         private static readonly CompSortW _CompSortW = new CompSortW();
         private class CompSortB : IComparer<ChessBestMove>
         {
-            public int Compare(ChessBestMove x, ChessBestMove y)
+            public int Compare(ChessBestMove a, ChessBestMove b)
             {
-                return ChessBestMove.Compare2(x, y);
+                return ChessBestMove.Compare2(a, b);
             }
         }
         private static readonly CompSortB _CompSortB = new CompSortB();
@@ -169,17 +190,17 @@ namespace DotChess
                 BestMoves.Sort(_CompSortB);
         }
 
-        private bool IsDepthComplete()
+        private bool IsDepthStop()
         {
             // Stop descending? true = Don't descend any farther.
             // Higher scoring moves deserve more looking.
 
-            if (Cancel.IsCancellationRequested)
+            if (Cancel.IsCancellationRequested)     // we are told to stop.
                 return true;
-            if (this.DepthCur >= DepthMax)    // we descended far enough.
+            if (this.DepthCur >= DepthMaxTurn)    // we descended far enough.
             {
                 // half life random depth?
-                if (this.DepthCur >= DepthMax * 2)    // we descended far enough.
+                if (this.DepthCur >= DepthMaxTurn * 2)    // we descended far enough. Hard stop.
                     return true;
                 int randVal = Random.Next(4);   // take a random chance to peek ahead another level.
                 if (randVal == 0)
@@ -230,7 +251,7 @@ namespace DotChess
             }
 
             // Descend into next set of moves?
-            if (IsDepthComplete())
+            if (IsDepthStop())
             {
                 return;
             }
@@ -238,7 +259,7 @@ namespace DotChess
             Board.State.MoveCount++;    // next move for Opposite color
             DepthCur++;
 
-            FindBestMoves(newFlags.GetReqInCheck()); // update BestMoves for Opposite color
+            FindBestMoves2(newFlags.GetReqInCheck()); // update BestMoves for Opposite color
 
             // Distill best score from BestMoves
             // Q: Dilute the value of any move based on the number of alternate moves the opponent could take to avoid it. good (for me) and bad (for them).
@@ -268,19 +289,17 @@ namespace DotChess
             Board.State.MoveCount--;
         }
 
-        internal int InitDepth()
+        private void InitDepthMax()
         {
             // optimize depth max.             
             Debug.Assert(DepthCur == 0);
-            int depthPrev = DepthMax;
             int moveCount = MoveCount;
+            DepthMaxTurn = DepthMaxTarget;
 
-            if (moveCount < 5 && Board.Score == 0 && DepthMax > 3)
-                DepthMax = 3;
-            if (moveCount < 20 && Board.CaptureCount == 0 && DepthMax > 3)
-                DepthMax = 3;
-
-            return depthPrev;
+            if (moveCount < 5 && Board.Score == 0 && DepthMaxTurn > 3)
+                DepthMaxTurn = 3;
+            if (moveCount < 20 && Board.CaptureCount == 0 && DepthMaxTurn > 3)
+                DepthMaxTurn = 3;
         }
 
         private void UpdateBestScores(ChessRequestF flagsReq)
@@ -309,11 +328,8 @@ namespace DotChess
             BestMoves = prevBestMoves;  // Restore this to proper Depth.
         }
 
-        public void FindBestMoves(ChessRequestF flagsReq)
+        private void FindBestMoves2(ChessRequestF flagsReq)
         {
-            // Find the best scoring move for the given board and TurnColor. 
-            // NOTE: This can be VERY slow.
-
             ChessColor color = Board.State.TurnColor;   // whose turn to move?
 
             if (BestMoves == null) // If i haven't already been here.
@@ -353,7 +369,7 @@ namespace DotChess
                 {
                     int k = (BestMoves.Count * (i + 1)) / threadsAvail;
                     Debug.Assert(k > j);
-                    threads[i] = new ChessBestTest(new ChessGameBoard(Board), DepthMax, Random, Cancel) { DepthCur = this.DepthCur, BestMoves = this.BestMoves.GetRange(j, k - j) };
+                    threads[i] = new ChessBestTest(new ChessGameBoard(Board), DepthMaxTurn, Random, Cancel) { DepthCur = this.DepthCur, BestMoves = this.BestMoves.GetRange(j, k - j) };
                     j = k;
                 }
 
@@ -378,6 +394,19 @@ namespace DotChess
             {
                 UpdateBestScores(flagsReq);
             }
+        }
+
+        /// <summary>
+        /// Find the best scoring move for the given board and TurnColor. 
+        /// NOTE: This can be VERY slow.
+        /// </summary>
+        /// <param name="flagsReq"></param>
+        public void FindBestMoves(ChessRequestF flagsReq)
+        {
+            StopPonder();
+            InitDepthMax();
+            FindBestMoves2(flagsReq); // update scores for BestMoves. This can be VERY slow.
+            StartPonder();
         }
 
         public int GetBestMovesTieCount()

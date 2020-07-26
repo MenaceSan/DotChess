@@ -54,7 +54,7 @@ namespace DotChess
             return id - (int)ChessPieceId.QTY1;
         }
 
-        public new string ToString()
+        public override string ToString()
         {
             return Id.ToString();
         }

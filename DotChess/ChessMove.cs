@@ -21,13 +21,13 @@ namespace DotChess
 
         public bool IsValid => ToPos.IsOnBoard && Flags.IsAllowedMove();
 
-        public static int Compare2(ChessMove x, ChessMove y)
+        public static int Compare2(ChessMove a, ChessMove b)
         {
             // For sorting in a list. 
-            int diff = (int)x.Flags - (int)y.Flags;
+            int diff = (int)a.Flags - (int)b.Flags;
             if (diff != 0)
                 return diff;
-            return ChessPosition.Compare2(x.ToPos, y.ToPos);
+            return ChessPosition.Compare2(a.ToPos, b.ToPos);
         }
         public bool Equals1(ChessMove other)
         {
@@ -62,13 +62,13 @@ namespace DotChess
             // like IEquatable<>
             return Id == other.Id && base.Equals1(other);
         }
-        public static int Compare2(ChessMoveId x, ChessMoveId y)
+        public static int Compare2(ChessMoveId a, ChessMoveId b)
         {
             // For sorting in a list. 
-            int diff = (int)x.Id - (int)y.Id;
+            int diff = (int)a.Id - (int)b.Id;
             if (diff != 0)
                 return diff;
-            return ChessMove.Compare2(x, y);
+            return ChessMove.Compare2(a, b);
         }
 
         public ChessMoveId()
@@ -104,13 +104,13 @@ namespace DotChess
             return HashCode == other.HashCode && base.Equals(other);
         }
 
-        public static int Compare2(ChessMoveHistory x, ChessMoveHistory y)
+        public static int Compare2(ChessMoveHistory a, ChessMoveHistory b)
         {
             // For sorting in a list. 
-            int diff = Comparer<ulong>.Default.Compare(x.HashCode, y.HashCode);
+            int diff = Comparer<ulong>.Default.Compare(a.HashCode, b.HashCode);
             if (diff != 0)
                 return diff;
-            return ChessMoveId.Compare2(x, y);
+            return ChessMoveId.Compare2(a, b);
         }
 
         public ChessMoveHistory(ulong hashCode, ChessPieceId id, ChessPosition toPos, ChessResultF flags)
@@ -139,9 +139,9 @@ namespace DotChess
         /// </summary>
         private class CompSort : IComparer<ChessMoveHistory>
         {
-            public int Compare(ChessMoveHistory x, ChessMoveHistory y)
+            public int Compare(ChessMoveHistory a, ChessMoveHistory b)
             {
-                return ChessMoveHistory.Compare2(x, y);
+                return ChessMoveHistory.Compare2(a, b);
             }
         }
         private static readonly CompSort _CompSort = new CompSort();
@@ -151,9 +151,9 @@ namespace DotChess
         /// </summary>
         private class CompFind : IComparer<ChessMoveHistory>
         {
-            public int Compare(ChessMoveHistory x, ChessMoveHistory y)
+            public int Compare(ChessMoveHistory a, ChessMoveHistory b)
             {
-                return Comparer<ulong>.Default.Compare(x.HashCode, y.HashCode);
+                return Comparer<ulong>.Default.Compare(a.HashCode, b.HashCode);
             }
         }
         private static readonly CompFind _CompFind = new CompFind();

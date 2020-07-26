@@ -7,7 +7,7 @@ Licensed under the MIT License. https://opensource.org/licenses/MIT
 Version 1.0.0.2
 
 DotChess is an open source chess rules engine written in C# .NET. (.Net Standard 2.0)
-It is meant to be simple and readable source code. It values readability over speed.
+It is meant to be simple and readable source code. It values readability over speed. (~1.5M moves per second)
 
 Sources are hosted on GitHub at https://github.com/MenaceSan/DotChess
 The secondary project documentation pages are at https://www.menasoft.com/dotchess or https://www.menasoft.com/blog/?page_id=542
@@ -26,12 +26,13 @@ The consumer is meant to provide their own UI. The GUI might be some standalone 
 - Score future moves for best recommendation.
 - Unit Tests for coverage of all basic features. 
 - Unit Test tool for regeneration of the opening moves db.
-- Multi threaded optimization for speeding up complex tests. Uses Parallel .NET name space.
+- Multi threaded optimization for speeding up complex tests. Uses Parallel .NET name space. ~1.5M moves per second on my i7 CPU.
 
 # Todo:
 
 - Better scoring optimization. Trimming futile score paths might be a huge CPU savings. Current scoring a rather brute force. So the results are good but expensive.
 e.g. There are > 5M brute force tests to be performed for looking ahead 4 moves on the opening board. Many of those test paths could be obviously discarded, resulting in far fewer tests.
+- UCI support
 
 # Similar Projects:
 
