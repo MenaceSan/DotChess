@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -11,15 +11,21 @@ namespace DotChess.Tests
     [TestClass()]
     public class ChessTests
     {
-        const string kDir = @"C:\FourTe\Dot\DotChess";
         public TestContext TestContext { get; set; }    // WriteLine . Console ? or Debug ?
+
+        private string GetDir()
+        {
+            // Find the directory with our test files.
+
+            return @"C:\FourTe\Dot\DotChess";
+        }
 
         [TestMethod()]
         public void TestChessNotation()
         {
             // Test specific notations.
 
-            var note = new ChessNotation1();
+            var note = new ChessNotationPly();
             note.SetNotation("Nfxd2", 0, ChessColor.kWhite);
             Assert.IsTrue(note.IsValid);
         }
@@ -194,11 +200,11 @@ namespace DotChess.Tests
             // Load and play a notated game.
 
             int lineNumber = 0;
-            List<ChessNotation1> notations2 = ChessNotation1.LoadPgn(_ChessMoves2, ref lineNumber);
+            List<ChessNotationPly> notations2 = ChessNotationPly.LoadPgn(_ChessMoves2, ref lineNumber);
             Assert.IsTrue(notations2 != null);
 
             lineNumber = 0;
-            List<ChessNotation1> notations1 = ChessNotation1.LoadPgn(_ChessMoves1, ref lineNumber);
+            List<ChessNotationPly> notations1 = ChessNotationPly.LoadPgn(_ChessMoves1, ref lineNumber);
             Assert.IsTrue(notations1 != null);
 
             var game1 = new ChessGameTest
@@ -226,7 +232,7 @@ namespace DotChess.Tests
             // Try going forward and backward in a game history.
 
             int lineNumber = 0;
-            List<ChessNotation1> notations = ChessNotation1.LoadPgn(_ChessMoves1, ref lineNumber);
+            List<ChessNotationPly> notations = ChessNotationPly.LoadPgn(_ChessMoves1, ref lineNumber);
             Assert.IsTrue(notations != null);
 
             var game1 = new ChessGameTest
@@ -243,7 +249,7 @@ namespace DotChess.Tests
             bool ret = game1.Game.MoveHistory(true);
             Assert.IsTrue(!ret);    // no forward allowed.
 
-            ret = game1.Game.MoveHistory(true);  
+            ret = game1.Game.MoveHistory(true);
             Assert.IsTrue(!ret);   // still no forward allowed.
 
             ret = game1.Game.MoveHistory(false);    // back
@@ -253,15 +259,13 @@ namespace DotChess.Tests
             Assert.IsTrue(ret);   // forward allowed.
             ret = game1.Game.MoveHistory(true);
             Assert.IsTrue(!ret);    // no forward allowed.
-
-
         }
 
         [TestMethod()]
         public void TestChessGamesDir()
         {
             // load a bunch of PGN notation games and play them.
-            int games = ChessGameTest.PlayDir(kDir + @"\Games", false);   // Openings, Players, Games or Todo
+            int games = ChessGameTest.PlayDir(Path.Combine(GetDir(), "Games"), false);   // Openings, Players, Games or Todo
             Console.WriteLine($"Played {games} Games from Games Dir.");
             Assert.IsTrue(games > 0);
         }
@@ -270,7 +274,8 @@ namespace DotChess.Tests
         public void TestChessPlayersDir()
         {
             // load a bunch of PGN notation games and play them.
-            int games = ChessGameTest.PlayDir(kDir + @"\Players", false);   // Openings, Players, Games or Todo
+            // NOTE: this may be slow.
+            int games = ChessGameTest.PlayDir(Path.Combine(GetDir(), "Players"), false);   // Openings, Players, Games or Todo
             Console.WriteLine($"Played {games} Games from Players Dir.");
             Assert.IsTrue(games > 0);
         }
@@ -279,17 +284,17 @@ namespace DotChess.Tests
         public void BuildOpeningDbFile()
         {
             // Read all the games i have and record the first 10 moves to the chessDb.
-
+            // NOTE: this may be slow.
             // ChessDb.OpenDbFile(kDir);
             ChessDb.OpenDbFile("");
 
             // Play games and build db.
-            int games = ChessGameTest.PlayDir(kDir + @"\Games", true);
-            games += ChessGameTest.PlayDir(kDir + @"\Players", true);
-            games += ChessGameTest.PlayDir(kDir + @"\Openings", true);
+            int games = ChessGameTest.PlayDir(Path.Combine(GetDir(), "Games"), true);
+            games += ChessGameTest.PlayDir(Path.Combine(GetDir(), "Players"), true);
+            games += ChessGameTest.PlayDir(Path.Combine(GetDir(), "Openings"), true);
 
             // Write out the db file.
-            ChessDb.WriteDbFile(kDir);
+            ChessDb.WriteDbFile(GetDir());
             Console.WriteLine($"ChessDb.WriteDbFile {games} Games from Dirs.");
         }
 
@@ -314,7 +319,7 @@ namespace DotChess.Tests
             ChessBoard.TransposeFEN1(sb);
             string fen1t = sb.ToString();
 
-            var board2 = new ChessGameBoard(new string[] { fen1t });
+            var board2 = new ChessGameBoard(new string[] { fen1t }, 0, true);
             Assert.IsTrue(board2.GetBoardError() == null);
 
             string fen2 = board2.FEN;
@@ -334,10 +339,10 @@ namespace DotChess.Tests
             Assert.IsTrue(game.IsValidGame());
 
             // Unbalanced game. Black should win! White should lose.
-            game.TestW = new ChessBestTest(game.Board, 1, new Random(212121212), CancellationToken.None);       // set a constant seed.
-            game.TestB = new ChessBestTest(game.Board, 2, new Random(212121212), CancellationToken.None);
+            game.TesterW = new ChessBestTester(game.Board, 1, new Random(212121212), CancellationToken.None);       // set a constant seed.
+            game.TesterB = new ChessBestTester(game.Board, 2, new Random(212121212), CancellationToken.None);
 
-            ChessDb.OpenDbFile(kDir);
+            ChessDb.OpenDbFile(GetDir());
 
             DateTime timeStart = DateTime.Now;
             while (!game.LastResultF.IsComplete())
@@ -365,7 +370,7 @@ namespace DotChess.Tests
                 Assert.IsTrue(game.IsValidGame());
             }
 
-            int testCount = game.TestW.TestCount + game.TestB.TestCount;
+            int testCount = game.TesterW.TestCount + game.TesterB.TestCount;
             TimeSpan timeDiff = DateTime.Now - timeStart;
 
             Assert.IsTrue(game.IsValidGame());
@@ -376,5 +381,62 @@ namespace DotChess.Tests
             Console.WriteLine($"Played recommended Game with {game.MoveCount} moves and {testCount} tests in {timeDiff.TotalSeconds} seconds.");
             Console.WriteLine($"Result: {game.ResultId2}");
         }
+
+        [TestMethod()]
+        public void TestChessUci()
+        {
+            // Test UCI
+            // see sample in: http://wbec-ridderkerk.nl/html/UCIProtocol.html
+
+            var retStream = new MemoryStream();
+            var uci = new ChessUci(new StreamWriter(retStream) { AutoFlush = true });
+
+            ChessUciRet retCmd = uci.Command("uci");
+            Assert.IsTrue(retCmd == ChessUciRet.Ok);
+
+            string ret = Encoding.ASCII.GetString(retStream.ToArray());
+            retStream.SetLength(0); // reset.
+            Assert.IsTrue(ret.Length > 10); // should return a bunch of stuff.
+            Assert.IsTrue(ret.Contains(ChessUci.kOut_uciok));
+
+            retCmd = uci.Command("setoption name Hash value 32");
+            Assert.IsTrue(retCmd == ChessUciRet.Ok);
+            retCmd = uci.Command("setoption name NalimovCache value 1");
+            Assert.IsTrue(retCmd == ChessUciRet.UnkArg);
+            retCmd = uci.Command("setoption name NalimovPath value d:\tb; c\tb");
+            Assert.IsTrue(retCmd == ChessUciRet.UnkArg);
+
+            retCmd = uci.Command("isready");
+            Assert.IsTrue(retCmd == ChessUciRet.Ok);
+            ret = Encoding.ASCII.GetString(retStream.ToArray());
+            retStream.SetLength(0); // reset.
+            Assert.IsTrue(ret.Contains(ChessUci.kOut_readyok));
+
+            retCmd = uci.Command("ucinewgame");
+            Assert.IsTrue(retCmd == ChessUciRet.Ok);
+
+            retCmd = uci.Command("setoption name UCI_AnalyseMode value true");
+            Assert.IsTrue(retCmd == ChessUciRet.Ok);
+
+            retCmd = uci.Command("position startpos moves e2e4 e7e5");
+            Assert.IsTrue(retCmd == ChessUciRet.Ok);
+            retCmd = uci.Command("go infinite");
+            Assert.IsTrue(retCmd == ChessUciRet.Ok);
+
+            Thread.Sleep(1000); // Wait for 1 second.
+
+            retCmd = uci.Command("stop");
+            Assert.IsTrue(retCmd == ChessUciRet.Ok);
+
+            // should return "bestmove g1f3 ponder d8f6"
+            ret = Encoding.ASCII.GetString(retStream.ToArray());
+            retStream.SetLength(0); // reset.
+            Assert.IsTrue(ret.Contains(ChessUci.kOut_bestmove));
+
+            // done.
+            retCmd = uci.Command("quit");
+            Assert.IsTrue(retCmd == ChessUciRet.Quit);
+        }
+
     }
 }

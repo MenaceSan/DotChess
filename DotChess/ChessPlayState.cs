@@ -36,7 +36,7 @@ namespace DotChess
     {
         public const int kMovesMax = 999;
 
-        public int MoveCount;  // Whose turn is it to move now ? completed moves. even = white. e.g. 1 = waiting for black to move. Not the same as TurnNumber. AKA Half Moves
+        public int MoveCount;  // Whose turn is it to move now ? completed moves. even = white. e.g. 1 = waiting for black to move. Not the same as TurnNumber. AKA Half Moves, Ply/Plies
         public ChessPosition EnPassantPos;        // If last move has EnPassant potential. This is the position 'behind' the pawn. IsOpeningPawn else ChessPosition.kNull
         public readonly ChessStateColor White;
         public readonly ChessStateColor Black;
@@ -201,17 +201,19 @@ namespace DotChess
             Black = new ChessStateColor(ChessUtil.GetCastleFlags(stateString[i + 8]));
         }
 
+        public const int kFenParams = 5;
+
         public ChessPlayState(string[] fen, int i)
         {
-            // Parse parts of the FEN string. 5 parts.
+            // Parse parts of the FEN string. 5 parts. kFenParams
 
-            bool isWhite = (fen[i + 0][0] == 'w');
+            bool isWhite = (fen[i + 0][0] == 'w');  // [0]
             ChessColor color = isWhite ? ChessColor.kWhite : ChessColor.kBlack;
 
             White = new ChessStateColor(ChessCastleFlags.All); // Assume no castling allowed unless explicitly allowed.
             Black = new ChessStateColor(ChessCastleFlags.All);
  
-            string castleAvail = fen[i + 1];    // Castle avail flags.
+            string castleAvail = fen[i + 1];    // Castle avail flags. // [1]
             foreach (char ch in castleAvail)
             {
                 switch (ch) // allowed?
@@ -233,7 +235,7 @@ namespace DotChess
 
             if (i + 2 >= fen.Length)
                 return;
-            string enpassantPos = fen[i + 2];    // 
+            string enpassantPos = fen[i + 2];    // [2]
             if (ChessPosition.IsValidNotation(enpassantPos, 0))
             {
                 EnPassantPos = new ChessPosition(enpassantPos[0], enpassantPos[1]);
@@ -249,11 +251,13 @@ namespace DotChess
 
             if (i + 3 >= fen.Length)
                 return;
-            if (int.TryParse(fen[i + 3], out int movesSinceCapture))
+            if (int.TryParse(fen[i + 3], out int movesSinceCapture))        // [3]
             {
             }
 
-            if (int.TryParse(fen[i + 4], out int turns))
+            if (i + 4 >= fen.Length)
+                return;
+            if (int.TryParse(fen[i + 4], out int turns))    // [4]
             {
                 MoveCount = (turns - 1) * 2;
             }

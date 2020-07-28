@@ -17,7 +17,7 @@ namespace DotChess
     public class ChessGame
     {
         /// <summary>
-        /// PGN headers
+        /// PGN game info headers
         /// </summary>
         public ChessGameInfo Info;
 
@@ -35,15 +35,15 @@ namespace DotChess
         public ChessColorId ResultId2;   // Result from current play. Should match Result for PGN completed games.
 
         public ChessModeId PlayModeId = ChessModeId.PvP;  // rules enforced? else players can move pieces freely.
-        public bool TournamentMode; // No changes can be made without reseting the game. TODO
+        public bool TournamentMode; // No changes can be made without reseting the game. TODO. no change to PlayModeId allowed.
 
         public int MoveCount => Board.State.MoveCount;  // helper.
 
         /// <summary>
         /// Test engines for W and B Best (Computer/AI) moves.
         /// </summary>
-        public ChessBestTest TestW; // My scoring of future moves stored from a previous move.
-        public ChessBestTest TestB;
+        public ChessBestTester TesterW; // My scoring of future moves stored from a previous move.
+        public ChessBestTester TesterB;
 
         public static void InternalFailure(string msg)
         {
@@ -62,8 +62,8 @@ namespace DotChess
             LastResultF = 0;
             ResultId2 = ChessColorId.Undefined;
             PlayModeId = ChessModeId.PvP;       // Wait for players to make moves.
-            TestW?.Reset();
-            TestB?.Reset();
+            TesterW?.Reset();
+            TesterB?.Reset();
         }
 
         public bool IsValidGame()
@@ -105,8 +105,8 @@ namespace DotChess
             if (newFlags.IsComplete())      // game over.
             {
                 Board.State.EnPassantPos = ChessPosition.kNull; // no longer valid.
-                TestW?.Reset();   // no longer valid.
-                TestB?.Reset();   // no longer valid.
+                TesterW?.Reset();   // no longer valid.
+                TesterB?.Reset();   // no longer valid.
 
                 if (newFlags.IsAny(ChessResultF.Checkmate))
                 {
@@ -153,8 +153,8 @@ namespace DotChess
             }
 
             // Advance any ChessBestTest
-            TestW?.MoveNext(piece.Id, posNew, true);
-            TestB?.MoveNext(piece.Id, posNew, true);
+            TesterW?.MoveNext(piece.Id, posNew, true);
+            TesterB?.MoveNext(piece.Id, posNew, true);
 
             // Complete the move.
             int moveCount = MoveCount;
@@ -231,7 +231,7 @@ namespace DotChess
         {
             ChessRequestF flagsReq = LastResultF.GetReqInCheck() | ChessRequestF.Test;
             bool isWhite = Board.State.TurnColor == ChessColor.kWhite;
-            ChessBestTest tester = (isWhite || TestB == null) ? TestW : TestB;
+            ChessBestTester tester = (isWhite || TesterB == null) ? TesterW : TesterB;
 
             if (ChessDb._Instance != null) // find a move in my opening moves db.
             {
@@ -253,17 +253,36 @@ namespace DotChess
 
                 if (dbMoves.Count > 0)
                 {
-                    return dbMoves[tester.Random.Next(dbMoves.Count)];
+                    return dbMoves[tester?.Random.Next(dbMoves.Count) ?? 0];
                 }
             }
 
-            // No Db move available. So figure it out.
-            tester.FindBestMoves(flagsReq);
-            int countMoves = tester.GetBestMovesTieCount();
-            if (countMoves <= 0)
-                return null;    // Game over. I have no moves. Checkmate or Stalemate.
+            if (tester != null)
+            {
+                // No Db move available. So figure it out.
+                tester.FindBestMoves(flagsReq);
+                int countMoves = tester.GetBestMovesTieCount();
+                if (countMoves <= 0)
+                    return null;    // Game over. I have no moves. Checkmate or Stalemate.
 
-            return tester.BestMoves[tester.Random.Next(countMoves)];
+                return tester.BestMoves[tester.Random.Next(countMoves)];
+            }
+
+            return  null;
+        }
+
+        /// <summary>
+        /// Get proper notation for a move.
+        /// </summary>
+        public ChessNotationPly GetNotation(ChessMoveId move)
+        {
+            var piece = GetPiece(move.Id);
+            return new ChessNotationPly
+            {
+                TypeId = piece.TypeId,
+                From = piece.Pos,
+                Move = move,
+            };
         }
 
         /// <summary>
@@ -271,7 +290,7 @@ namespace DotChess
         /// </summary>
         /// <param name="notation">ChessNotation1</param>
         /// <returns>false = error. the board was not in proper state to play this move.</returns>
-        public bool Move(ChessNotation1 notation)
+        public bool Move(ChessNotationPly notation)
         {
             if (!notation.IsValid)
                 return false;
@@ -344,8 +363,8 @@ namespace DotChess
             moveCount--;
             ChessNotationRev movePrev = Moves[moveCount];
 
-            TestW?.MovePrev(movePrev.Move);
-            TestB?.MovePrev(movePrev.Move);
+            TesterW?.MovePrev(movePrev.Move);
+            TesterB?.MovePrev(movePrev.Move);
             Board = new ChessGameBoard(movePrev.StateString);
 
             Debug.Assert(this.MoveCount == moveCount);

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <ApplicationIcon>DotChess.ico</ApplicationIcon>
+    <Version>1.0.3</Version>
+    <Company>Menasoft</Company>
+    <Authors>Dennis Robinson</Authors>
+    <Product>DotChess</Product>
+    <Description>UCI for DotChess. https://www.menasoft.com/dotchess
+see ReadMe.md</Description>
+    <Copyright>Menasoft © 2020</Copyright>
+    <PackageLicenseFile>ReadMe.md</PackageLicenseFile>
+    <PackageProjectUrl>https://www.menasoft.com/dotchess</PackageProjectUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <PackageIcon>DotChess.ico</PackageIcon>
+    <RepositoryUrl>https://github.com/MenaceSan/DotChess</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotChess\DotChess16.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\DotChess\DotChess.ico">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

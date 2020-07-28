@@ -97,7 +97,7 @@ namespace DotChess
                 string line = lines[lineNumber];
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
-                if (line[0] == ChessNotation1.kCommentChar)     // always ignore line comments.
+                if (line[0] == ChessNotationPly.kCommentChar)     // always ignore line comments.
                     continue;
 
                 if (line[0] != '[')
@@ -160,16 +160,16 @@ namespace DotChess
                         Result = value;
                         switch (value)
                         {
-                            case ChessNotation1.kWinWhite:
+                            case ChessNotationPly.kWinWhite:
                                 ResultId = ChessColorId.White;
                                 break;
-                            case ChessNotation1.kWinBlack:
+                            case ChessNotationPly.kWinBlack:
                                 ResultId = ChessColorId.Black;
                                 break;
-                            case ChessNotation1.kStalemate:
+                            case ChessNotationPly.kStalemate:
                                 ResultId = ChessColorId.Stalemate;
                                 break;
-                            case ChessNotation1.kActive:
+                            case ChessNotationPly.kActive:
                             default:
                                 ResultId = ChessColorId.Undefined;
                                 break;

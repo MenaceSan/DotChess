@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,19 +36,24 @@ namespace DotChess
     }
 
     /// <summary>
-    /// Hold <= kChildMovesMax of my child moves for future query
-    /// cache/save some of these. 1 in kChildMovesMax of the data can be re-used, next turn.
+    /// Hold <= ChildMovesToKeep of my child moves for future query
+    /// cache/save some of these. 1 in ChildMovesToKeep of the data can be re-used, next turn.
     /// Don't bother storing junk moves.
     /// </summary>
     public class ChessBestMoves : ChessBestMove
     {
-        public List<ChessBestMoves> ChildMoves; // (if i have them) kChildMovesMax
+        public List<ChessBestMoves> ChildMoves; // (if i have them) ChildMovesToKeep
         // Completed ? The ponder may have been interrupted.
 
-        public ChessBestMoves(ChessMove clone, ChessPieceId id, List<ChessBestMoves> bestMoves = null)
+        public ChessBestMoves(ChessMove clone, ChessPieceId id, List<ChessBestMoves> childMoves = null)
             : base(clone, id)
         {
-            this.ChildMoves = bestMoves;
+            this.ChildMoves = childMoves;
+        }
+        public ChessBestMoves(ChessMoveId clone, List<ChessBestMoves> childMoves = null)
+             : base(clone, clone.Id)
+        {
+            this.ChildMoves = childMoves;
         }
     }
 
@@ -58,20 +64,20 @@ namespace DotChess
     /// This is CPU bound so async will not help us. only hard threads/cores help.
     /// Must clone this if we use another thread.
     /// </summary>
-    public class ChessBestTest
+    public class ChessBestTester
     {
-        public const int kChildMovesMax = 5;       // Keep (at most) X best scoring moves. TODO Allow this to change ?
-
         private readonly ChessGameBoard Board;   // Must be a clone to work on another thread.
         public readonly Random Random;     // Add a small random element for scoring otherwise equal moves. 0.01
-        public readonly CancellationToken Cancel;       // Allow time based cancel of search.
+        public readonly TextWriter UciOutput;   // Write my UCI "info" output to here.
 
-        public bool Ponder;      // TODO When not my turn, Keep thinking with a lighter thread usage. Dont trim kChildMovesMax unless the moves are truly junk.
+        public CancellationToken Cancel;       // Allow time based cancel of search.
+        public bool Ponder;      // TODO When not my turn, Keep thinking until Cancel.
 
         public readonly int DepthMaxTarget;      // How many levels deep should i go ? How smart am i ?
         public int DepthMaxTurn;      // How many levels deep should i go in this turn?
         public int DepthParallel = 255;     // How deep should i allow Parallel usage? For testing. 255 = always allow Parallel.
         public int DepthCur;    // How many levels deep have i gone?
+        public int ChildMovesToKeep = 5;       // Keep (at most) X best scoring moves. TODO Allow this to change ?
 
         public List<ChessBestMoves> BestMoves;   // All possible 1 moves from Board, sorted by Score.
         public int TestCount;       // How many child tests.
@@ -82,7 +88,7 @@ namespace DotChess
 
         public int MoveCount => Board.State.MoveCount;  // helper.
 
-        public ChessBestTest(ChessGameBoard board, int depthMax, Random random, CancellationToken cancel)
+        public ChessBestTester(ChessGameBoard board, int depthMax, Random random, CancellationToken cancel)
         {
             this.Board = board;
             this.DepthMaxTarget = DepthMaxTurn = depthMax;   // Max depth for this. how hard will i think about it.
@@ -112,7 +118,8 @@ namespace DotChess
 
         private void StartPonder()
         {
-            // Ponder on a background thread. Do not halt this thread.
+            // Ponder on a background thread. (if its not my turn)
+            // Do not halt this thread.
             // Look for moves the opponent might make and look for counters to it. 
             // assume most of the moves will be wasted. Since the opponent wont pick them.
 
@@ -156,7 +163,7 @@ namespace DotChess
             if (BestMoves == null)
                 return;
             StopPonder();
-            BestMoves = new List<ChessBestMoves> { new ChessBestMoves(movePrev, movePrev.Id, BestMoves) };
+            BestMoves = new List<ChessBestMoves> { new ChessBestMoves(movePrev, BestMoves) };
             StartPonder();
         }
 
@@ -223,8 +230,8 @@ namespace DotChess
 
         internal void TestPossibleNext(ChessPiece pieceMoved, ChessResultF newFlags, int scoreChange)
         {
+            // Get Best score for all child moves past here.
             // Called by Move(ChessRequestF.Test)
-            // Get Best score for all moves past here.
             // Score this move + all possible next moves and how they might help or damage me.
 
             if (!newFlags.IsAllowedMove())  // last move didn't work!
@@ -273,10 +280,10 @@ namespace DotChess
                 SortBest(scoreDir);
                 Score = BestMoves[0].Score * scoreDir;  // Child Score incorporates current Score.
 
-                // Drop moves we don't think we will use. > kChildMovesMax
-                if (BestMoves.Count > kChildMovesMax)
+                // Drop moves we don't think we will use. > ChildMovesToKeep
+                if (BestMoves.Count > ChildMovesToKeep)
                 {
-                    BestMoves.RemoveRange(kChildMovesMax, BestMoves.Count - kChildMovesMax);
+                    BestMoves.RemoveRange(ChildMovesToKeep, BestMoves.Count - ChildMovesToKeep);
                 }
             }
             else
@@ -320,6 +327,13 @@ namespace DotChess
                 ChessResultF flags = Board.Move(pieceToMove, move.ToPos, flagsReq | ChessRequestF.AssumeValid | ChessRequestF.Test, this); // ASSUME it calls TestPossibleNext()
                 Debug.Assert(flags.IsAllowedMove());
                 // Debug.Assert(pieceToMove.Pos.Equals(posPrev));      // No real move occurred. This should ALWAYS be true.
+
+                if (DepthCur == 0 && UciOutput != null)
+                {
+                    // TODO // Display what i think of this move.
+                    UciOutput.WriteLine(ChessUci.kOut_info);
+                }
+
                 move.Score = this.Score;    // record the score.
                 move.ChildMoves = this.BestMoves;
                 this.Score = prevScore;
@@ -334,7 +348,7 @@ namespace DotChess
 
             if (BestMoves == null) // If i haven't already been here.
             {
-                // Init BestMoves with all possible moves. Scores added later.
+                // Init BestMoves with all possible moves. Scores added later. Trim futile moves.
 
                 BestMoves = new List<ChessBestMoves>();   // All possible moves for this board and color at this board state.
 
@@ -364,12 +378,12 @@ namespace DotChess
                 // sub-divide into chunks to run in Parallel.
                 int j = 0;
                 threadsAvail = Math.Min(threadsAvail, BestMoves.Count);
-                var threads = new ChessBestTest[threadsAvail];
+                var threads = new ChessBestTester[threadsAvail];
                 for (int i = 0; i < threadsAvail; i++)
                 {
                     int k = (BestMoves.Count * (i + 1)) / threadsAvail;
                     Debug.Assert(k > j);
-                    threads[i] = new ChessBestTest(new ChessGameBoard(Board), DepthMaxTurn, Random, Cancel) { DepthCur = this.DepthCur, BestMoves = this.BestMoves.GetRange(j, k - j) };
+                    threads[i] = new ChessBestTester(new ChessGameBoard(Board), DepthMaxTurn, Random, Cancel) { DepthCur = this.DepthCur, BestMoves = this.BestMoves.GetRange(j, k - j) };
                     j = k;
                 }
 

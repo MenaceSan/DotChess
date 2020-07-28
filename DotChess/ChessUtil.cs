@@ -470,6 +470,7 @@ namespace DotChess
         }
         public ChessPosition(ushort bitIdx)
         {
+            // decode bitIdx
             X = (byte)(bitIdx % kDim);
             Y = (byte)(bitIdx / kDim);
             Debug.Assert(IsOnBoard);
@@ -585,7 +586,7 @@ namespace DotChess
             Flags = IsWhite ? ChessResultF.ColorW : ChessResultF.ColorB;
             PawnMoves = IsWhite ? _MovesPawnW : _MovesPawnB;
             Debug.Assert(PawnMoves != null);    // static init order must be correct.
-            ResultWin = IsWhite ? ChessNotation1.kWinWhite : ChessNotation1.kWinBlack;
+            ResultWin = IsWhite ? ChessNotationPly.kWinWhite : ChessNotationPly.kWinBlack;
 
             KingId = IsWhite ? ChessPieceId.WK : ChessPieceId.BK;
             RookQ = IsWhite ? ChessPieceId.WQR : ChessPieceId.BQR;

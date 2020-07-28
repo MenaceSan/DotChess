@@ -10,13 +10,12 @@ using System.IO;
 namespace DotChess
 {
     /// <summary>
-    /// A game move for a single predefined/assumed piece, given a certain board state.
-    /// TODO struct ??
+    /// A game half-move/Ply for a single predefined/assumed piece, given a certain board state.
     /// </summary>
     [Serializable]
     public class ChessMove
     {
-        public ChessPosition ToPos;   // Move to here. 2 bytes.
+        public ChessPosition ToPos;   // Move a piece to here. 2 bytes.
         public ChessResultF Flags;    // What is the result of this move. 2 bytes.
 
         public bool IsValid => ToPos.IsOnBoard && Flags.IsAllowedMove();

@@ -168,6 +168,7 @@ namespace DotChess
 
         protected string GetPiecesError()
         {
+            // Maybe this should be in ChessGameBoard ? Game rules related stuff ?
             ulong captureBitMask = 0;   // capture spots must be free.
             byte captureCount = 0;
             byte onBoardCount = 0;
@@ -188,7 +189,7 @@ namespace DotChess
                 {
                     if (typeInit != ChessTypeId.Pawn)   // only pawns can change type.
                         return $"Piece '{id}' is type {piece.TypeId}";
-                    if (piece.TypeId == ChessTypeId.King) // cant be a king.
+                    if (piece.TypeId == ChessTypeId.King) // cant promote to king.
                         return "Pawn as King";
                     if (!ChessType.IsValidId(piece.TypeId)) // bad TypeId should never happen.
                         return "Pawn has Invalid TypeId";
@@ -555,29 +556,29 @@ namespace DotChess
             }
         }
 
-        public ChessBoard(string[] fen)
+        public ChessBoard(string[] fen, int i = 0, bool hasOrder = true)
         {
             // Set the board state as a single string. reverse of FEN GetFEN
 
             InitPiecesNull();
 
             // Parse the first part of the FEN string.
-            InitFEN(fen[0]);
+            InitFEN(fen[i]);
 
             // Parse the rest of the FEN string. 5 more parts.
-            if (fen.Length > 1)
+            if (fen.Length - i > 1)
             {
-                State = new ChessPlayState(fen, 1);
+                State = new ChessPlayState(fen, i+1);
             }
             else
             {
                 State = new ChessPlayState();
             }
 
-            // Parse capture order if present. GetFEN(useCaptureOrder)
-            if (fen.Length > 6)
+            // Parse capture order (if present). GetFEN(useCaptureOrder)
+            if (hasOrder && fen.Length - i > 6)
             {
-                foreach (char ch in fen[6])
+                foreach (char ch in fen[i+6])
                 {
                     int typeId = ChessType.GetTypeIdFrom(char.ToUpper(ch));
                     if (typeId < 0)

@@ -11,14 +11,14 @@ namespace DotChess
 {
     /// <summary>
     /// Record history of a move as half line of Standard Notation. May be in PGN file.
-    /// Allow to play back these moves.
+    /// Allow to play back these half-moves/Plies.
     /// Get notation. http://www.chesscorner.com/tutorial/basic/notation/notate.htm
     /// </summary>
     [Serializable]
-    public class ChessNotation1 : IEquatable<ChessNotation1>
+    public class ChessNotationPly : IEquatable<ChessNotationPly>
     {
         /// <summary>
-        /// What piece type this ? Id may not be defined. Type is Vague, Id is more specific. Use GetPiece() to resolve Id.
+        /// What piece type this ? Id may not be defined. Type is Vague, ChessPieceId is more specific. Use GetPiece() to resolve Id.
         /// </summary>
         public ChessTypeId TypeId = ChessTypeId.QTY;   // must be populated!
         public ChessType Type => ChessType.GetType(TypeId);
@@ -53,7 +53,7 @@ namespace DotChess
             }
         }
 
-        public bool Equals(ChessNotation1 other)
+        public bool Equals(ChessNotationPly other)
         {
             // IEquatable<>
             // skip test for Id
@@ -63,7 +63,7 @@ namespace DotChess
                 return false;
             return Move.Equals1(other.Move);
         }
-        public bool Equals2(ChessNotation1 other)
+        public bool Equals2(ChessNotationPly other)
         {
             if (Move.Id != other.Move.Id)
                 return false;
@@ -459,14 +459,14 @@ namespace DotChess
             return ChessPiece.kNull;    // This is bad ! 2 or more pieces could move here !!! Idiot shorthand notation is too vague!
         }
 
-        public static List<ChessNotation1> LoadPgn(string[] lines, ref int lineNumber)
+        public static List<ChessNotationPly> LoadPgn(string[] lines, ref int lineNumber)
         {
             // Load a list of notation lines. 2 moves per turn  .
             // https://thechessworld.com/articles/general-information/15-best-chess-games-of-all-time-annotated/
             // https://en.wikipedia.org/wiki/Portable_Game_Notation#:~:text=Portable%20Game%20Notation%20(PGN)%20is,supported%20by%20many%20chess%20programs.
             // https://www.pgnmentor.com/files.html
 
-            var listMoves = new List<ChessNotation1>();
+            var listMoves = new List<ChessNotationPly>();
 
             for (; lineNumber < lines.Length; lineNumber++)
             {
@@ -516,7 +516,7 @@ namespace DotChess
                         continue;
                     }
 
-                    var notation1 = new ChessNotation1();
+                    var notation1 = new ChessNotationPly();
 
                     int k = i;
                     i = notation1.SetNotation(line, i, ChessPlayState.GetColorForMove(listMoves.Count));
@@ -533,16 +533,20 @@ namespace DotChess
             return listMoves;
         }
 
-        public ChessNotation1()
+        public ChessNotationPly()
         {
             // Assume SetNotation() will be called.     
+        }
+        public ChessNotationPly(string notation, ChessColor color)
+        {
+            SetNotation(notation, 0, color);
         }
     }
 
     /// <summary>
-    /// ChessNotation1 with reversible StateString.
+    /// ChessNotation1 with reversible StateString. I can undo the move.
     /// </summary>
-    public class ChessNotationRev : ChessNotation1
+    public class ChessNotationRev : ChessNotationPly
     {
         public readonly string StateString;       // allow role back to board state. the state BEFORE this move. GetStateString()
 

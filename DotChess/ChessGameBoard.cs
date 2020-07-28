@@ -69,7 +69,7 @@ namespace DotChess
             if (!GetPiece(ChessPieceId.BKB).Pos.IsValidBishop(false))
                 return "BKB square color";
             if (!GetPiece(ChessPieceId.BQB).Pos.IsValidBishop(true))
-                return "BQB square color";  
+                return "BQB square color";
 
             int score2 = GetScore();
             if (Score != score2)
@@ -334,7 +334,7 @@ namespace DotChess
         /// <param name="flagsReq">ChessRequestF</param>
         /// <param name="testPossible">ChessBestTest</param>
         /// <returns>ChessResultF = result of move. (or failure)</returns>
-        public ChessResultF Move(ChessPiece piece, ChessPosition posNew, ChessRequestF flagsReq, ChessBestTest testPossible = null)
+        public ChessResultF Move(ChessPiece piece, ChessPosition posNew, ChessRequestF flagsReq, ChessBestTester testPossible = null)
         {
             // ChessRequestF.AssumeValid = this is basically valid but test it for check.
             // ChessRequestF.Test = revert this move if successful.
@@ -550,7 +550,7 @@ namespace DotChess
                 }
             }
 
-            // remove all positions that would put me in check.
+            // remove all positions that would put/left me in check.
             for (int i = 0; i < possibles.Count; i++)
             {
                 ChessPosition posNew = possibles[i].ToPos;
@@ -591,11 +591,12 @@ namespace DotChess
             Score = clone.Score;
         }
 
-        public ChessGameBoard(string[] fen) : base(fen)
+        public ChessGameBoard(string[] fen, int i = 0, bool hasOrder = true) 
+            : base(fen, i, hasOrder)
         {
-            Score = GetScore();
             State.White.CastleFlags |= GetCastleFlagsMin(ChessColor.kWhite);
             State.Black.CastleFlags |= GetCastleFlagsMin(ChessColor.kBlack); // Must have at least this.
+            Score = GetScore();
         }
     }
 }

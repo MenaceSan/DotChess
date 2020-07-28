@@ -13,15 +13,15 @@ namespace DotChess.Tests
     public class ChessGameTest
     {
         public string FileName;     // Where did i get the game notation from?
-        public int LineNumber;
+        public int LineNumber;      // Current line of the file.
 
         public ChessGame Game;
-        public List<ChessNotation1> Notations;      // the moves to play.
+        public List<ChessNotationPly> Notations;      // the moves to play.
         ChessColor ColorWinner;
 
         public bool BuildOpeningDb;     // Do special stuff if we are building the opening db.
 
-        private void TestMoveValid(ChessNotation1 notation)
+        private void TestMoveValid(ChessNotationPly notation)
         {
             // Is this move valid ?
             ChessPiece piece = notation.GetPiece(Game.Board, Game.LastResultF.GetReqInCheck());
@@ -38,7 +38,7 @@ namespace DotChess.Tests
             string fen1 = Game.Board.GetFEN(true);
             string stateString1 = Game.Board.GetStateString();
 
-            var boardFromFEN = new ChessBoard(fen1.Split(null));    // kFenSep
+            var boardFromFEN = new ChessBoard(fen1.Split(null), 0, true);    // kFenSep
             var boardFromState = new ChessBoard(stateString1);    // restore form State.
 
             string fen2 = boardFromFEN.GetFEN(true);
@@ -61,7 +61,7 @@ namespace DotChess.Tests
             Assert.IsTrue(stateString2 == board4.GetStateString());
         }
 
-        public void PlayMove(ChessNotation1 notation)
+        public void PlayMove(ChessNotationPly notation)
         {
             if (notation.Move.Flags.IsAny(ChessResultF.Resigned | ChessResultF.Stalemate))
             {
@@ -146,7 +146,7 @@ namespace DotChess.Tests
             Assert.IsTrue(Game.IsValidGame());
 
             int moveCount = 0;
-            foreach (ChessNotation1 notation in Notations)
+            foreach (ChessNotationPly notation in Notations)
             {
                 int turnNumber = (moveCount / 2) + 1;
                 Assert.IsTrue(Game.Board.State.TurnNumber == turnNumber);
@@ -213,7 +213,7 @@ namespace DotChess.Tests
                         var gameInfo = new ChessGameInfo();
                         lineNumber = gameInfo.LoadPgn(lines, lineNumber);
 
-                        List<ChessNotation1> notations = ChessNotation1.LoadPgn(lines, ref lineNumber);
+                        List<ChessNotationPly> notations = ChessNotationPly.LoadPgn(lines, ref lineNumber);
                         Assert.IsTrue(notations != null);
 
                         // load up a Batch 
