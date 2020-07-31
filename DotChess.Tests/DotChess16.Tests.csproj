@@ -7,6 +7,8 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>DotChess.Tests</AssemblyName>
     <RootNamespace>DotChess.Tests</RootNamespace>
+    <Version>1.0.4.12600</Version>
+    <AssemblyVersion>1.0.4.12600</AssemblyVersion>
   </PropertyGroup>
 
   

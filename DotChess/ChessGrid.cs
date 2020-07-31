@@ -39,7 +39,8 @@ namespace DotChess
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetAt(ChessPosition pos)
         {
-            return GetAt(pos.X, pos.Y);
+            int idb = Squares[pos.BitIdx];
+            return idb - kSquare1;
         }
 
         private void SetAt1(ChessPosition pos, byte index1)

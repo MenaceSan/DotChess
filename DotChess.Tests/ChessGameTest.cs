@@ -17,9 +17,9 @@ namespace DotChess.Tests
 
         public ChessGame Game;
         public List<ChessNotationPly> Notations;      // the moves to play.
-        ChessColor ColorWinner;
 
         public bool BuildOpeningDb;     // Do special stuff if we are building the opening db.
+        ChessColor ColorWinner;         // Only record the winners moves. Don't record loser moves.
 
         private void TestMoveValid(ChessNotationPly notation)
         {

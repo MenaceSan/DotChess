@@ -47,7 +47,7 @@ namespace DotChess
     }
 
     /// <summary>
-    /// A piece on the chess board. Board has Max 32 pieces.
+    /// An individual piece on the chess board. Board has Max 32 pieces.
     /// Piece Type is constant to start but pawns may be Promoted. ChessPieceType
     /// </summary>
     [Serializable]
@@ -442,6 +442,7 @@ namespace DotChess
             // IEquatable
             return X == other.X && Y == other.Y;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Compare2(ChessPosition a, ChessPosition b)
         {
             // For sorting in a list. like IComparable<ChessPosition>

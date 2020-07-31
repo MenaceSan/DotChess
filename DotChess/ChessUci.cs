@@ -12,7 +12,7 @@ namespace DotChess
 {
     public enum ChessUciRet
     {
-        // immediate result from Command()
+        // immediate result from UCI Command()
         UnkCmd,    // unknown command.
         UnkArg,     // invalid arg / syntax error on known command
         Err,      // error on command.
@@ -151,7 +151,7 @@ namespace DotChess
                     continue;
                 }
                 // Add the move.
-                Game.Move(new ChessNotationPly(cmd, Game.Board.State.TurnColor));
+                Game.Move(new ChessNotationPly(cmd, Game.TurnColor));
             }
 
             return ChessUciRet.Ok;
@@ -193,7 +193,7 @@ namespace DotChess
                         {
                             string cmdMove = cmds[j];
                             var notation = new ChessNotationPly();
-                            int k = notation.SetNotation(cmdMove, 0, Game.Board.State.TurnColor);
+                            int k = notation.SetNotation(cmdMove, 0, Game.TurnColor);
                             if (k <= 0)
                                 break;
                             Game.TesterW.BestMoves.Add(new ChessBestMoves(notation.Move));
@@ -339,10 +339,9 @@ namespace DotChess
             {
                 try
                 {
-                    var ret = Command(cmds, i);
-                    if (ret == ChessUciRet.UnkCmd)
-                        continue;
-                    return ret;
+                    ChessUciRet ret = Command(cmds, i);
+                    if (ret != ChessUciRet.UnkCmd)
+                        return ret;
                 }
                 catch
                 {

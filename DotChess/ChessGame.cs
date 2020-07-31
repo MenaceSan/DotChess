@@ -38,6 +38,7 @@ namespace DotChess
         public bool TournamentMode; // No changes can be made without reseting the game. TODO. no change to PlayModeId allowed.
 
         public int MoveCount => Board.State.MoveCount;  // helper.
+        public ChessColor TurnColor => Board.State.TurnColor; // helper.
 
         /// <summary>
         /// Test engines for W and B Best (Computer/AI) moves.
@@ -89,7 +90,7 @@ namespace DotChess
         public List<ChessMove> GetValidMovesFor(ChessPieceId id)
         {
             var piece = GetPiece(id);
-            if (LastResultF.IsComplete() || piece.Color != Board.State.TurnColor)    // not my turn. weird.
+            if (LastResultF.IsComplete() || piece.Color != TurnColor)    // not my turn. weird.
             {
                 return new List<ChessMove>();
             }
@@ -98,7 +99,7 @@ namespace DotChess
 
         private void MoveAdvance(ChessResultF newFlags)
         {
-            var color = Board.State.TurnColor;
+            var color = TurnColor;
             Info.MoveAdvance();
             LastResultF = newFlags;
 
@@ -140,7 +141,7 @@ namespace DotChess
                 return ChessResultF.Invalid;    // or should we just ignore this ?
             if (LastResultF.IsComplete())    // game over. no moves allowed.
                 return LastResultF;
-            if (piece.Color != Board.State.TurnColor)    // not my turn. weird.
+            if (piece.Color != TurnColor)    // not my turn. weird.
                 return ChessResultF.Invalid;
 
             string stateString = Board.GetStateString();  // stateString BEFORE this move.  
@@ -207,7 +208,7 @@ namespace DotChess
         /// <param name="isStalemate"></param>
         public void Resign(bool isStalemate)
         {
-            var color = Board.State.TurnColor;
+            var color = TurnColor;
 
             if (isStalemate)
             {
@@ -230,7 +231,7 @@ namespace DotChess
         public ChessMoveId RecommendBest1()
         {
             ChessRequestF flagsReq = LastResultF.GetReqInCheck() | ChessRequestF.Test;
-            bool isWhite = Board.State.TurnColor == ChessColor.kWhite;
+            bool isWhite = TurnColor == ChessColor.kWhite;
             ChessBestTester tester = (isWhite || TesterB == null) ? TesterW : TesterB;
 
             if (ChessDb._Instance != null) // find a move in my opening moves db.

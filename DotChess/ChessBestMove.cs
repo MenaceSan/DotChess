@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,10 +20,11 @@ namespace DotChess
     {
         public int Score;   // Score for what may happen after this + n levels.
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Compare2(ChessBestMove a, ChessBestMove b)
         {
             // For sorting in a list. 
-            int diff = Comparer<int>.Default.Compare(a.Score, b.Score);
+            int diff = a.Score - b.Score;
             if (diff != 0)
                 return diff;
             return ChessMoveId.Compare2(a, b);
@@ -71,7 +73,7 @@ namespace DotChess
         public readonly TextWriter UciOutput;   // Write my UCI "info" output to here.
 
         public CancellationToken Cancel;       // Allow time based cancel of search.
-        public bool Ponder;      // TODO When not my turn, Keep thinking until Cancel.
+        public bool AutoPonder;      // TODO When not my turn, Keep thinking until Cancel.
 
         public readonly int DepthMaxTarget;      // How many levels deep should i go ? How smart am i ?
         public int DepthMaxTurn;      // How many levels deep should i go in this turn?
@@ -87,6 +89,7 @@ namespace DotChess
         static int _ThreadsRunning = 0;         // < ChessUtil.kThreadsMax
 
         public int MoveCount => Board.State.MoveCount;  // helper.
+        public ChessColor TurnColor => Board.State.TurnColor; // helper.
 
         public ChessBestTester(ChessGameBoard board, int depthMax, Random random, CancellationToken cancel)
         {
@@ -116,14 +119,14 @@ namespace DotChess
             // TODO
         }
 
-        private void StartPonder()
+        private void StartAutoPonder()
         {
-            // Ponder on a background thread. (if its not my turn)
+            // Automatically Ponder on a background thread. (if its not my turn)
             // Do not halt this thread.
             // Look for moves the opponent might make and look for counters to it. 
             // assume most of the moves will be wasted. Since the opponent wont pick them.
 
-            if (!Ponder)
+            if (!AutoPonder)
                 return;
 
             // TODO
@@ -150,7 +153,7 @@ namespace DotChess
             Reset();  // invalidated. They didn't take a move i tested, expected (or kept).
             if (!isMyMove)
             {
-                StartPonder();
+                StartAutoPonder();
             }
         }
 
@@ -164,7 +167,7 @@ namespace DotChess
                 return;
             StopPonder();
             BestMoves = new List<ChessBestMoves> { new ChessBestMoves(movePrev, BestMoves) };
-            StartPonder();
+            StartAutoPonder();
         }
 
         /// <summary>
@@ -172,6 +175,7 @@ namespace DotChess
         /// </summary>
         private class CompSortW : IComparer<ChessBestMove>
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int Compare(ChessBestMove a, ChessBestMove b)
             {
                 return -ChessBestMove.Compare2(a, b);
@@ -180,6 +184,7 @@ namespace DotChess
         private static readonly CompSortW _CompSortW = new CompSortW();
         private class CompSortB : IComparer<ChessBestMove>
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int Compare(ChessBestMove a, ChessBestMove b)
             {
                 return ChessBestMove.Compare2(a, b);
@@ -199,7 +204,7 @@ namespace DotChess
 
         private bool IsDepthStop()
         {
-            // Stop descending? true = Don't descend any farther.
+            // Stop descending? futile path? true = Don't descend any farther.
             // Higher scoring moves deserve more looking.
 
             if (Cancel.IsCancellationRequested)     // we are told to stop.
@@ -344,7 +349,7 @@ namespace DotChess
 
         private void FindBestMoves2(ChessRequestF flagsReq)
         {
-            ChessColor color = Board.State.TurnColor;   // whose turn to move?
+            ChessColor color = TurnColor;   // whose turn to move?
 
             if (BestMoves == null) // If i haven't already been here.
             {
@@ -420,13 +425,13 @@ namespace DotChess
             StopPonder();
             InitDepthMax();
             FindBestMoves2(flagsReq); // update scores for BestMoves. This can be VERY slow.
-            StartPonder();
+            StartAutoPonder();
         }
 
         public int GetBestMovesTieCount()
         {
             // How many moves are tied for best? So we can pick one randomly.
-            // If multiple with the same score then pick one randomly.
+            // If we have multiple moves with the same score then pick one randomly.
             // ASSUME BestMoves sorted. SortBest() called.
 
             int countMoves = BestMoves.Count;

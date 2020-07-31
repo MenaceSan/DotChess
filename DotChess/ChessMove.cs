@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace DotChess
 {
@@ -20,6 +21,7 @@ namespace DotChess
 
         public bool IsValid => ToPos.IsOnBoard && Flags.IsAllowedMove();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Compare2(ChessMove a, ChessMove b)
         {
             // For sorting in a list. 
@@ -61,6 +63,7 @@ namespace DotChess
             // like IEquatable<>
             return Id == other.Id && base.Equals1(other);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Compare2(ChessMoveId a, ChessMoveId b)
         {
             // For sorting in a list. 

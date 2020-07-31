@@ -4,7 +4,7 @@ Copyright (c) 2020 Dennis Robinson (www.menasoft.com). All rights reserved.
 
 Licensed under the MIT License. https://opensource.org/licenses/MIT
 
-Version 1.0.3
+Version 1.0.4
 
 DotChess is an open source chess rules engine written in C# .NET. (.Net Standard 2.0)
 It is meant to be simple and readable source code. It values readability over speed. (~1.5M moves per second)

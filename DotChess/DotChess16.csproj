@@ -13,9 +13,9 @@
 see ReadMe.md</Description>
     <PackageIcon>DotChess.ico</PackageIcon>
     <RepositoryType>GitHub</RepositoryType>
-    <AssemblyVersion>1.0.3.12531</AssemblyVersion>
-    <FileVersion>1.0.3.12531</FileVersion>
-    <Version>1.0.3.12531</Version>
+    <AssemblyVersion>1.0.4.12531</AssemblyVersion>
+    <FileVersion>1.0.4.12531</FileVersion>
+    <Version>1.0.4.12531</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>ReadMe.md</PackageLicenseFile>

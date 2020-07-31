@@ -4,18 +4,20 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon>DotChess.ico</ApplicationIcon>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Company>Menasoft</Company>
     <Authors>Dennis Robinson</Authors>
     <Product>DotChess</Product>
     <Description>UCI for DotChess. https://www.menasoft.com/dotchess
 see ReadMe.md</Description>
     <Copyright>Menasoft © 2020</Copyright>
-    <PackageLicenseFile>ReadMe.md</PackageLicenseFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://www.menasoft.com/dotchess</PackageProjectUrl>
     <RepositoryType>GitHub</RepositoryType>
     <PackageIcon>DotChess.ico</PackageIcon>
     <RepositoryUrl>https://github.com/MenaceSan/DotChess</RepositoryUrl>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +26,10 @@ see ReadMe.md</Description>
 
   <ItemGroup>
     <None Include="..\DotChess\DotChess.ico">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
