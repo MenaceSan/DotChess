@@ -72,7 +72,7 @@ namespace DotChess
         public readonly Random Random;     // Add a small random element for scoring otherwise equal moves. 0.01
         public readonly TextWriter UciOutput;   // Write my UCI "info" output to here.
 
-        public CancellationToken Cancel;       // Allow time based cancel of search.
+        public CancellationToken Cancel = CancellationToken.None;       // Allow time based cancel of search.
         public bool AutoPonder;      // TODO When not my turn, Keep thinking until Cancel.
 
         public readonly int DepthMaxTarget;      // How many levels deep should i go ? How smart am i ?
@@ -81,7 +81,7 @@ namespace DotChess
         public int DepthCur;    // How many levels deep have i gone?
         public int ChildMovesToKeep = 5;       // Keep (at most) X best scoring moves. TODO Allow this to change ?
 
-        public List<ChessBestMoves> BestMoves;   // All possible 1 moves from Board, sorted by Score.
+        public List<ChessBestMoves> BestMoves;   // All possible next (1) moves from Board, sorted by Score.
         public int TestCount;       // How many child tests.
 
         public int Score;    // the current BEST score at DepthCur level for all BestMoves.
@@ -96,7 +96,7 @@ namespace DotChess
             this.Board = board;
             this.DepthMaxTarget = DepthMaxTurn = depthMax;   // Max depth for this. how hard will i think about it.
             this.Random = random;
-            this.Cancel = cancel;
+            this.Cancel = cancel;   // CancellationToken.None
         }
 
         /// <summary>

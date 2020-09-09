@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Mail;
 using System.Threading;
 
 namespace DotChess
@@ -36,7 +35,7 @@ namespace DotChess
 
         // State info.
         public bool Started;
-        public bool DebugMode;
+        public bool DebugMode = true;
         public bool AnalyseMode;        // kOpt_AnalyseMode = "UCI_AnalyseMode"
 
         bool _ponder = false;
@@ -69,7 +68,12 @@ namespace DotChess
             // Push text to output. e.g. kOut_info
             lock (this) // thread safe.
             {
-                Output?.WriteLine(string.Join(" ", data));
+                string datas = string.Join(" ", data);
+                if (DebugMode)
+                {
+                    ChessGame.DebugLog($"<- {datas}");
+                }
+                Output?.WriteLine(datas);
             }
         }
 
@@ -81,7 +85,7 @@ namespace DotChess
 
         void Cmd_Uci()
         {
-            // send once as a first command after program boot
+            // sent once as a first command after program boot
             Started = true;
             WriteUci();
 
@@ -95,6 +99,7 @@ namespace DotChess
 
         static bool GetBool(string s)
         {
+            // convert string to bool.  
             // like bool.TryParse(s, out b) // s = System.Boolean.FalseString;
             if (string.IsNullOrWhiteSpace(s))
                 return false;
@@ -124,6 +129,7 @@ namespace DotChess
                 case "OwnBook":
                     break;
             }
+
             return ChessUciRet.UnkArg;   // ignored.
         }
 
@@ -256,7 +262,13 @@ namespace DotChess
             return ChessUciRet.Ok;
         }
 
-        public ChessUciRet Command(string[] cmds, int i)
+        /// <summary>
+        /// exceute a command.
+        /// </summary>
+        /// <param name="cmds">commands and arguments to execute</param>
+        /// <param name="i">starting index</param>
+        /// <returns></returns>
+        ChessUciRet Command(string[] cmds, int i)
         {
             if (cmds.Length <= i)
                 return ChessUciRet.UnkCmd;       // blank = ignore it.
@@ -330,31 +342,46 @@ namespace DotChess
             // https://gist.github.com/aliostad/f4470274f39d29b788c1b09519e67372
 
             if (cmd == null)
-                return ChessUciRet.Quit;      // ^c is same as quit
+                return ChessUciRet.Quit;        // ^c is same as quit
             if (string.IsNullOrWhiteSpace(cmd))
                 return ChessUciRet.UnkCmd;       // blank = ignore it.
+
+            if (DebugMode)
+            {
+                // Log this command. So I can attach to this process with debugger and watch the traffic.
+                // ChessGame.DebugLog($"-> '{cmd}'");
+            }
+
             string[] cmds = cmd.Split();
+
+            ChessUciRet ret = ChessUciRet.UnkCmd;
 
             for (int i = 0; i < cmds.Length; i++)
             {
                 try
                 {
-                    ChessUciRet ret = Command(cmds, i);
+                    ret = Command(cmds, i);
                     if (ret != ChessUciRet.UnkCmd)
-                        return ret;
+                        break;
                 }
                 catch
                 {
-                    return ChessUciRet.Err;
+                    ret = ChessUciRet.Err;
+                    break;
                 }
             }
 
-            return ChessUciRet.UnkCmd;
+            if (DebugMode)
+            {
+                ChessGame.DebugLog($"-> '{cmd}' = {ret}");
+            }
+
+            return ret;
         }
 
         public ChessUci(TextWriter output)
         {
-            Output = output;
+            Output = output;    // push output here.
             Game.TesterW = new ChessBestTester(Game.Board, 1, new Random(), CancellationToken.None);
         }
     }

@@ -2,8 +2,10 @@
 // Copyright (c) 2020 Dennis Robinson (www.menasoft.com). All rights reserved.  
 // Licensed under the MIT License. See ReadMe.md file in the project root for full license information.  
 // 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace DotChess
 {
@@ -46,10 +48,26 @@ namespace DotChess
         public ChessBestTester TesterW; // My scoring of future moves stored from a previous move.
         public ChessBestTester TesterB;
 
+        const string kLogFileName = "/tmp/DotChess{0}.log";
+        static TextWriter LogFile = null;
+
+        public static void DebugLog(string msg)
+        {
+            // Log debug or error.
+            Debug.WriteLine(msg);
+
+            // Log to file?
+            if (LogFile == null)
+            {
+                // open it.
+                LogFile = File.CreateText(string.Format(kLogFileName, Process.GetCurrentProcess().Id));
+            }
+            LogFile?.WriteLine(msg);
+        }
         public static void InternalFailure(string msg)
         {
             // Something happened that should never happen!
-            Debug.WriteLine("INTERNAL FAILURE: " + msg);
+            DebugLog("INTERNAL FAILURE: " + msg);
         }
 
         /// <summary>
@@ -269,7 +287,7 @@ namespace DotChess
                 return tester.BestMoves[tester.Random.Next(countMoves)];
             }
 
-            return  null;
+            return null;
         }
 
         /// <summary>

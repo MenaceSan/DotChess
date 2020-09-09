@@ -252,7 +252,7 @@ namespace DotChess
         {
             if (_Instance != null)
                 return;
-            _Instance = new ChessDb();
+            _Instance = new ChessDb();  // singleton.
             _Instance.ReadDb(dir);      // read if it exists.
         }
 
