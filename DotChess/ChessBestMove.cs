@@ -13,12 +13,12 @@ using System.Threading.Tasks;
 namespace DotChess
 {
     /// <summary>
-    /// Score the next move for a color given a board state.
+    /// my calculation of score for the next move for a color given a board state.
     /// Predict, Suggest, Recommend, Evaluate best moves.
     /// </summary>
     public class ChessBestMove : ChessMoveId
     {
-        public int Score;   // Score for what may happen after this + n levels.
+        public int Score;   // My calculated score for what may happen after this + n levels.
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Compare2(ChessBestMove a, ChessBestMove b)
@@ -27,7 +27,7 @@ namespace DotChess
             int diff = a.Score - b.Score;
             if (diff != 0)
                 return diff;
-            return ChessMoveId.Compare2(a, b);
+            return ChessMoveId.Compare2(a, b);  // if they are equal score then compare other fields.
         }
 
         public ChessBestMove(ChessMove clone, ChessPieceId id)
@@ -60,7 +60,7 @@ namespace DotChess
     }
 
     /// <summary>
-    /// Score all possible moves from this ChessBoard state.
+    /// Score all possible (1 step next single) moves from this ChessBoard state.
     /// On a testing move, I should descend Depth levels and keep testing possible future moves.
     /// pick that best scoring path at each descent level.
     /// This is CPU bound so async will not help us. only hard threads/cores help.
